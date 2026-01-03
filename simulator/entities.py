@@ -52,7 +52,7 @@ class CardData:
     discover: bool = False
     outcast: bool = False
     
-    # New mechanics
+    # New mechanics (2020+)
     colossal: bool = False          # Summons appendages
     colossal_appendages: List[str] = field(default_factory=list)  # IDs of appendage cards
     titan: bool = False             # Has 3 titan abilities
@@ -67,6 +67,23 @@ class CardData:
     magnetic: bool = False          # Can merge with Mech
     manathirst: int = 0             # Bonus if you have X+ mana
     corpse_cost: int = 0            # Corpse cost for Death Knight
+    
+    # Classic expansion mechanics
+    echo: bool = False              # Can play again this turn (Witchwood)
+    inspire: bool = False           # After using Hero Power (TGT)
+    overkill: bool = False          # When dealing excess damage (Rastakhan)
+    recruit: bool = False           # Summon from deck (K&C)
+    recruit_cost: int = -1          # Max cost for recruit (-1 = any)
+    joust: bool = False             # Compare card costs (TGT)
+    adapt: bool = False             # Choose 1 of 3 buffs (Ungoro)
+    start_of_game: bool = False     # Effect at game start (Karazhan+)
+    omega: bool = False             # Bonus at 10 mana crystals (Boomsday)
+    
+    # Synergy trackers
+    elemental_synergy: bool = False  # If played elemental last turn (Ungoro)
+    dragon_synergy: bool = False     # If holding a dragon (BRM)
+    highlander: bool = False         # If no duplicates in deck (LoE)
+    combo: bool = False              # If card played this turn (Rogue)
     
     # Extra data
     tags: Dict[int, int] = field(default_factory=dict)
@@ -477,6 +494,33 @@ class HeroPower(Card):
             return False
         if self.controller and self.controller.mana < self.cost:
             return False
+        return True
+    
+    def use(self, target=None) -> bool:
+        """Use the hero power."""
+        if not self.can_use():
+            return False
+        
+        # Spend mana
+        if self.controller:
+            self.controller.mana -= self.cost
+            self.controller.hero_power_uses_this_turn += 1
+        
+        self.used_this_turn = True
+        
+        # Trigger Hero Power effect via effect system
+        if self.game and self.card_id in self.game._battlecry_handlers:
+            self.game._battlecry_handlers[self.card_id](self.game, self, target)
+        
+        # === INSPIRE: Trigger all friendly minions with Inspire ===
+        if self.controller and self.game:
+            for minion in self.controller.board:
+                if minion.data.inspire:
+                    handler = self.game._get_effect_handler(minion.card_id, "on_inspire")
+                    if handler:
+                        handler(self.game, self.controller, minion)
+            self.game.fire_event("on_hero_power", self.controller)
+        
         return True
     
     def reset_for_turn(self) -> None:

@@ -83,6 +83,13 @@ class Player(Entity):
         # Death Knight Corpses
         self.corpses: int = 0  # Current corpse count
         
+        # Expansion Synergy Trackers
+        self.elementals_played_last_turn: int = 0  # For elemental synergy
+        self.elementals_played_this_turn: int = 0  # Track current turn
+        self.cthun_attack: int = 6     # C'Thun base stats
+        self.cthun_health: int = 6
+        self.jade_counter: int = 0     # Current jade golem size
+        
         # Status
         self.conceded: bool = False
         self.opponent: Optional[Player] = None
@@ -464,6 +471,47 @@ class Player(Entity):
             return False
         self.sidequests.append(sidequest_card)
         return True
+    
+    # === SYNERGY HELPERS ===
+    
+    def played_elemental_last_turn(self) -> bool:
+        """Check if an elemental was played last turn (for elemental synergy)."""
+        return self.elementals_played_last_turn > 0
+    
+    def is_holding_dragon(self) -> bool:
+        """Check if holding a dragon in hand (for dragon synergy)."""
+        for card in self.hand:
+            if card.data.race and 'DRAGON' in str(card.data.race):
+                return True
+        return False
+    
+    def has_no_duplicates(self) -> bool:
+        """Check if deck has no duplicates (for Highlander effects)."""
+        card_ids = [c.card_id for c in self.deck]
+        return len(card_ids) == len(set(card_ids))
+    
+    def summon_jade_golem(self) -> None:
+        """Summon a Jade Golem (Jade counter increases each time)."""
+        self.jade_counter = min(self.jade_counter + 1, 30)  # Max 30/30
+        
+        if len(self.board) < 7 and self._game:
+            from simulator.factory import create_card
+            from simulator.entities import Minion
+            
+            jade = create_card("CS2_231", self._game)  # Wisp base
+            if jade:
+                m = Minion(jade.data, self._game)
+                m.attack = self.jade_counter
+                m.health = self.jade_counter
+                m.max_health = self.jade_counter
+                m.name = "Jade Golem"
+                m.controller = self
+                self.summon(m)
+    
+    def buff_cthun(self, attack: int = 0, health: int = 0) -> None:
+        """Buff C'Thun wherever it is."""
+        self.cthun_attack += attack
+        self.cthun_health += health
     
     def __repr__(self) -> str:
         return f"<Player '{self.name}' HP:{self.health} Mana:{self.mana}/{self.mana_crystals}>"

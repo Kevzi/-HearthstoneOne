@@ -277,7 +277,7 @@ class CardDatabase:
             secret='SECRET' in mechanics,
             discover='DISCOVER' in mechanics,
             outcast='OUTCAST' in mechanics,
-            # New mechanics
+            # New mechanics (2020+)
             colossal='COLOSSAL' in mechanics,
             titan='TITAN' in mechanics,
             forge='FORGE' in mechanics,
@@ -286,6 +286,19 @@ class CardDatabase:
             frenzy='FRENZY' in mechanics,
             tradeable='TRADEABLE' in mechanics,
             magnetic='MODULAR' in mechanics,  # Magnetic was called MODULAR
+            # Classic expansion mechanics
+            echo='ECHO' in mechanics,
+            inspire='INSPIRE' in mechanics,
+            overkill='OVERKILL' in mechanics,
+            recruit='RECRUIT' in mechanics,
+            adapt='ADAPT' in mechanics,
+            start_of_game='START_OF_GAME' in mechanics,
+            omega='If you have 10 Mana' in text,
+            combo='COMBO' in mechanics or '<b>Combo:</b>' in text,
+            # Synergies
+            elemental_synergy='If you played an Elemental last turn' in text,
+            dragon_synergy='holding a Dragon' in text or 'If you\'re holding a Dragon' in text,
+            highlander='no duplicates' in text.lower() or 'If your deck has no duplicates' in text,
             tags={GameTag.SPELLPOWER.value: getattr(card, 'spell_damage', 0) or 0}
         )
     

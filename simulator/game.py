@@ -459,6 +459,15 @@ class Game:
         self.current_player.spells_played_this_turn = 0
         self.current_player.hero_power_uses_this_turn = 0
         
+        # === ELEMENTAL SYNERGY: Track for next turn ===
+        ending_player = self.players[1 - self.current_player_idx]  # Player who just ended
+        ending_player.elementals_played_last_turn = ending_player.elementals_played_this_turn
+        ending_player.elementals_played_this_turn = 0
+        
+        # === ECHO: Remove echo copies from hand ===
+        for player in self.players:
+            player.hand = [c for c in player.hand if not getattr(c, '_echo_copy', False)]
+        
         # Start next player's turn
         self.fire_event("on_turn_start", self.current_player)
         self.current_player.start_turn()
@@ -494,25 +503,43 @@ class Game:
             "position": position
         })
         
+        
         player.cards_played_this_turn += 1
         player.combo_cards_played += 1
         player.cards_played_this_game.append(card.card_id)
         self.fire_event("on_card_played", card, target)
         
+        # Store echo flag before playing (card might be modified)
+        is_echo = card.data.echo
+        
+        # Track elementals for synergy
+        if card.data.race and 'ELEMENTAL' in str(card.data.race):
+            player.elementals_played_this_turn += 1
+        
         if card.card_type == CardType.MINION:
-            return self._play_minion(card, target, position)
+            result = self._play_minion(card, target, position)
         elif card.card_type == CardType.SPELL:
             player.spells_played_this_game.append(card.card_id)
             player.spells_played_this_turn += 1
-            return self._play_spell(card, target)
+            result = self._play_spell(card, target)
         elif card.card_type == CardType.WEAPON:
-            return self._play_weapon(card)
+            result = self._play_weapon(card)
         elif card.card_type == CardType.HERO:
-            return self._play_hero(card)
+            result = self._play_hero(card)
         elif card.card_type == CardType.LOCATION:
-            return self._play_location(card, position)
+            result = self._play_location(card, position)
+        else:
+            return False
         
-        return False
+        # === ECHO: Add a copy back to hand ===
+        if result and is_echo and len(player.hand) < 10:
+            from simulator.factory import create_card
+            echo_copy = create_card(card.card_id, self)
+            if echo_copy:
+                echo_copy._echo_copy = True  # Mark as echo copy (disappears at end of turn)
+                player.add_to_hand(echo_copy)
+        
+        return result
     
     def _play_minion(
         self, 
@@ -734,6 +761,15 @@ class Game:
                 if handler and target.controller:
                     handler(self, target.controller, target)
                 target._frenzy_triggered = True
+        
+        # === OVERKILL: Trigger when excess damage kills target ===
+        if source and source.data.overkill and target.card_type == CardType.MINION:
+            if target.health <= 0:  # Target is dead
+                excess_damage = -target.health  # How much overkill
+                if excess_damage >= 0:
+                    handler = self._get_effect_handler(source.card_id, "on_overkill")
+                    if handler and source.controller:
+                        handler(self, source.controller, source, excess=excess_damage)
         
         return actual_damage
     
