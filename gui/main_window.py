@@ -38,7 +38,7 @@ class TrainingThread(QThread):
         
         # Backup original sys.stdout
         original_stdout = sys.stdout
-        sys.stdout = Logger(self.log_signal)
+        # sys.stdout = Logger(self.log_signal)
         
         def iter_cb(stats):
             self.stats_signal.emit(stats)

@@ -4,6 +4,26 @@ All notable changes to the HearthstoneOne project.
 
 ---
 
+## [2026-01-03] — Training Pipeline Stability & Sideboard Fix
+
+### ✨ Added
+- **Dual Deck Format** — `meta_decks.json` now supports both `"code"` (deckstrings) and `"cards"` (direct ID lists).
+- **Starcraft Card Effects** — Implemented SC_759 (Shield Battery), SC_760 (Resonance Coil), SC_764 (Sentry), SC_783 (Void Ray).
+- **Additional Effects** — TIME_432 (Intertwined Fate), TLC_100 (Elise the Navigator), CORE_AV_329 (Thrive in the Shadows).
+
+### 🔧 Changed
+- **`simulator/deck_generator.py`** — Refactored `_load_meta_decks()` to return list format with dual format support.
+- **`gui/tabs/decks_tab.py`** — Updated to handle both deckstring and direct card list formats.
+- **Sideboard Filter** — Added intelligent filtering to ignore corrupted sideboard entries (count > 2, dbfId < 100).
+
+### 🧪 Fixed
+- **Multiprocessing Crash** — Resolved `QObject: Cannot create children for a parent in different thread` by isolating stdout redirection.
+- **Sideboard Parsing Bug** — Fixed Zilliax/E.T.C. deck codes that caused `too many values to unpack` errors.
+- **Protoss Priest Deck** — Corrected card IDs (CORE_AV_329 → CS3_028) and added all 30 cards manually.
+- **Wisp Fallback** — Added safety fallback with WARNING logs for unknown card IDs.
+
+---
+
 ## [2026-01-03] — Meta Decks JSON & Starcraft Support
 
 ### ✨ Added

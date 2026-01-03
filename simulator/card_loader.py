@@ -47,7 +47,7 @@ class CardDatabase:
         json_path = os.path.abspath(json_path)
         
         if os.path.exists(json_path):
-            print(f"Loading cards from local JSON: {json_path}")
+            # print(f"Loading cards from local JSON: {json_path}")
             try:
                 with open(json_path, "r", encoding="utf-8") as f:
                     data = json.load(f)

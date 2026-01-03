@@ -91,17 +91,17 @@ class HearthstoneGame:
         # Use META DECKS for training (competitive decks)
         if deck1 is None and deck2 is None:
             # Random meta deck for each player (Mixed Matches)
-            class1, deck1_ids = DeckGenerator.get_random_meta_deck()
-            class2, deck2_ids = DeckGenerator.get_random_meta_deck()
+            class1, deck1_ids, _ = DeckGenerator.get_random_meta_deck()
+            class2, deck2_ids, _ = DeckGenerator.get_random_meta_deck()
         else:
             if deck1 is None:
-                class1, deck1_ids = DeckGenerator.get_random_meta_deck()
+                class1, deck1_ids, _ = DeckGenerator.get_random_meta_deck()
             else:
                 deck1_ids = deck1
                 if class1 is None: class1 = "MAGE"
                 
             if deck2 is None:
-                class2, deck2_ids = DeckGenerator.get_random_meta_deck()
+                class2, deck2_ids, _ = DeckGenerator.get_random_meta_deck()
             else:
                 deck2_ids = deck2
                 if class2 is None: class2 = "WARRIOR"
@@ -135,10 +135,23 @@ class HearthstoneGame:
         self._game.setup(p1, p2)
         
         # Add decks (30 cards each)
+        # Add decks (30 cards each)
         for cid in deck1_ids: 
-            p1.add_to_deck(create_card(cid, self._game))
+            card = create_card(cid, self._game)
+            if card:
+                p1.add_to_deck(card)
+            else:
+                # Fallback for unknown ID to maintain deck size
+                print(f"WARNING: Unknown card ID {cid} replaced by Wisp (CS2_231) in Deck 1")
+                p1.add_to_deck(create_card("CS2_231", self._game))
+                
         for cid in deck2_ids: 
-            p2.add_to_deck(create_card(cid, self._game))
+            card = create_card(cid, self._game)
+            if card:
+                p2.add_to_deck(card)
+            else:
+                print(f"WARNING: Unknown card ID {cid} replaced by Wisp (CS2_231) in Deck 2")
+                p2.add_to_deck(create_card("CS2_231", self._game))
         
         p1.shuffle_deck()
         p2.shuffle_deck()

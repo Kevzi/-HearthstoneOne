@@ -54,7 +54,38 @@
     "PRIEST": [
         {
             "name": "Protoss Priest",
-            "code": "AAECAa0GCMekBvvuBv/0Bpf8BryDB4KYB9yxB/GxBwuLowThpQbo+Qa8+gb6/Qbr/waPgAf5hAegkQeIlQcAAQP1swbHpAb3swbHpAbu3gbHpAYAAA=="
+            "cards": [
+                "VAC_412",
+                "VAC_412",
+                "SC_757",
+                "SC_757",
+                "VAC_408",
+                "VAC_408",
+                "SC_753",
+                "SC_753",
+                "SC_764",
+                "SC_764",
+                "CS3_028",
+                "CS3_028",
+                "SC_759",
+                "TIME_432",
+                "TIME_432",
+                "VAC_960",
+                "VAC_960",
+                "SC_783",
+                "SC_783",
+                "TLC_100",
+                "SC_750",
+                "SC_750",
+                "EDR_810",
+                "EDR_810",
+                "TIME_064",
+                "VAC_415",
+                "SC_754",
+                "TOY_330",
+                "SC_762",
+                "SC_762"
+            ]
         },
         {
             "name": "New Priest (User)",

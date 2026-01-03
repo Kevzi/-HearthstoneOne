@@ -10,14 +10,20 @@ class DeckGenerator:
 
     @staticmethod
     def _load_meta_decks():
-        """Load decks from data/meta_decks.json."""
+        """Load decks from data/meta_decks.json.
+        
+        Supports two formats:
+        - "code": deckstring to decode
+        - "cards": direct list of card IDs
+        """
         import json
         import os
         
         json_path = os.path.join(os.path.dirname(__file__), "..", "data", "meta_decks.json")
         json_path = os.path.abspath(json_path)
         
-        decks_map = {}
+        # Returns list of (class_name, deck_name, deck_data) where deck_data is either a code or a card list
+        decks_list = []
         
         if os.path.exists(json_path):
             try:
@@ -25,55 +31,77 @@ class DeckGenerator:
                     data = json.load(f)
                 for class_name, decks in data.items():
                     for deck in decks:
-                        decks_map[deck['code']] = (class_name, deck['name'])
+                        if 'cards' in deck:
+                            # Direct card IDs format
+                            decks_list.append((class_name, deck['name'], deck['cards']))
+                        elif 'code' in deck:
+                            # Deckstring format
+                            decks_list.append((class_name, deck['name'], deck['code']))
             except Exception as e:
                 print(f"Error loading meta_decks.json: {e}")
         
-        return decks_map
+        return decks_list
 
     @staticmethod
     def get_meta_decks_for_class(player_class: str) -> List[List[str]]:
         """Get all meta decks for a specific class."""
-        decks_map = DeckGenerator._load_meta_decks()
+        decks_list = DeckGenerator._load_meta_decks()
         relevant_decks = []
-        for deck_code, (cls, name) in decks_map.items():
+        for cls, name, deck_data in decks_list:
             if cls.upper() == player_class.upper():
-                decoded = DeckGenerator.decode_deck_string(deck_code)
-                if decoded and len(decoded) >= 20:
-                    relevant_decks.append(decoded)
+                if isinstance(deck_data, list):
+                    # Direct card IDs
+                    if len(deck_data) >= 20:
+                        relevant_decks.append(deck_data)
+                else:
+                    # Deckstring
+                    decoded = DeckGenerator.decode_deck_string(deck_data)
+                    if decoded and len(decoded) >= 20:
+                        relevant_decks.append(decoded)
         return relevant_decks
 
     @staticmethod
     def get_preset_deck(archetype: str) -> List[str]:
         """Get a predefined iconic deck by archetype name."""
-        decks_map = DeckGenerator._load_meta_decks()
-        for deck_code, (cls, name) in decks_map.items():
+        decks_list = DeckGenerator._load_meta_decks()
+        for class_name, name, deck_data in decks_list:
             if archetype.lower() in name.lower():
-                decoded = DeckGenerator.decode_deck_string(deck_code)
-                if decoded:
-                    return decoded
+                if isinstance(deck_data, list):
+                    # Direct card IDs
+                    return deck_data
+                else:
+                    # Deckstring
+                    decoded = DeckGenerator.decode_deck_string(deck_data)
+                    if decoded:
+                        return decoded
         return DeckGenerator.get_random_deck()
 
     @staticmethod
     def get_random_meta_deck() -> Tuple[str, List[str], str]:
         """Get a random meta deck. Returns (class_name, card_ids, deck_name)."""
-        decks_map = DeckGenerator._load_meta_decks()
-        if not decks_map:
+        decks_list = DeckGenerator._load_meta_decks()
+        if not decks_list:
             # Fallback
             cls = "MAGE"
             return cls, DeckGenerator.get_random_deck(cls), "Random Mage"
             
         import random
-        code = random.choice(list(decks_map.keys()))
-        class_name, deck_name = decks_map[code]
-        decoded = DeckGenerator.decode_deck_string(code)
+        class_name, deck_name, deck_data = random.choice(decks_list)
+        
+        # Check format
+        if isinstance(deck_data, list):
+            # Direct card IDs format
+            card_ids = deck_data
+        else:
+            # Deckstring format - decode it
+            card_ids = DeckGenerator.decode_deck_string(deck_data)
         
         # Ensure 30 cards
-        if decoded:
+        if card_ids and len(card_ids) > 0:
              # Safety pad if partial
-             while len(decoded) < 30:
-                 decoded.append(decoded[0])
-             return class_name, decoded[:30], deck_name
+             while len(card_ids) < 30:
+                 card_ids.append(card_ids[0])
+             return class_name, card_ids[:30], deck_name
         
         return class_name, DeckGenerator.get_random_deck(class_name), f"Random {class_name}"
 
@@ -89,6 +117,12 @@ class DeckGenerator:
             cards = decoded[0]
             result = []
             for dbf_id, count in cards:
+                # Filter out corrupted sideboard entries:
+                # - count > 2 is impossible in a normal deck (max 2 copies, 1 for legendary)
+                # - dbf_id < 100 are placeholders/delimiters, not real cards
+                if count > 2 or dbf_id < 100:
+                    continue
+                    
                 card_id = DeckGenerator._dbf_map.get(dbf_id)
                 if card_id:
                     result.extend([card_id] * count)

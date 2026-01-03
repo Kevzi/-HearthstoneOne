@@ -1,8 +1,9 @@
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, 
     QListWidget, QListWidgetItem, QTextEdit, QMessageBox, QDialog,
-    QScrollArea, QFrame
+    QScrollArea, QFrame, QApplication
 )
+from PyQt6.QtGui import QColor, QFont
 from PyQt6.QtCore import Qt, QTimer
 import sys
 import os
@@ -75,17 +76,18 @@ class DecksTab(QWidget):
             return
 
         # Group by Class for nicer display
+        # New format: decks_map is now a list of (class_name, deck_name, deck_data)
         grouped = {}
-        for code, (cls_name, deck_name) in decks_map.items():
+        for cls_name, deck_name, deck_data in decks_map:
             if cls_name not in grouped: grouped[cls_name] = []
-            grouped[cls_name].append((deck_name, code))
+            grouped[cls_name].append((deck_name, deck_data))
             
         for cls_name in sorted(grouped.keys()):
-            for deck_name, code in grouped[cls_name]:
+            for deck_name, deck_data in grouped[cls_name]:
                 display_name = f"[{cls_name}] {deck_name}"
                 item = QListWidgetItem(display_name)
-                # Map display name to code
-                self.meta_decks[display_name] = code
+                # Store deck_data (can be code string or cards list)
+                self.meta_decks[display_name] = deck_data
                 self.deck_list.addItem(item)
                 
     def view_selected_deck(self):
@@ -100,77 +102,150 @@ class DecksTab(QWidget):
             self.show_deck_list(display_name, code)
             
     def show_deck_list(self, name, code):
+        from PyQt6.QtWidgets import QTableWidget, QTableWidgetItem, QHeaderView
+        from simulator.enums import Rarity
+
         dialog = QDialog(self)
-        dialog.setWindowTitle(f"Deck List: {name}")
-        dialog.resize(400, 600)
+        dialog.setWindowTitle(f"Deck: {name}")
+        dialog.resize(500, 700)
         dialog.setStyleSheet("background-color: #0f172a; color: white;")
         
         layout = QVBoxLayout(dialog)
         
-        title = QLabel(name)
-        title.setStyleSheet("font-size: 16px; font-weight: bold; margin-bottom: 10px;")
-        layout.addWidget(title)
+        # Header
+        header = QLabel(name)
+        header.setStyleSheet("font-size: 20px; font-weight: bold; margin-bottom: 15px; color: #60a5fa;")
+        header.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(header)
         
-        text_area = QTextEdit()
-        text_area.setReadOnly(True)
-        text_area.setStyleSheet("background-color: #1e293b; color: #94a3b8; border: none; font-size: 14px;")
+        # Table
+        table = QTableWidget()
+        table.setColumnCount(3)
+        table.setHorizontalHeaderLabels(["Cost", "Name", "Qty"])
+        table.verticalHeader().setVisible(False)
+        table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+        table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
+        table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
+        table.setSelectionMode(QTableWidget.SelectionMode.NoSelection)
+        table.setShowGrid(False)
+        table.setStyleSheet("""
+            QTableWidget {
+                background-color: #1e293b;
+                border: 1px solid #334155;
+                font-size: 14px;
+                gridline-color: #334155;
+            }
+            QHeaderView::section {
+                background-color: #334155;
+                color: #e2e8f0;
+                padding: 6px;
+                font-weight: bold;
+                border: none;
+            }
+            QTableWidget::item {
+                padding: 5px;
+                border-bottom: 1px solid #334155;
+            }
+        """)
+        layout.addWidget(table)
         
-        card_ids = None
-        error_msg = "Unknown error"
+        # Decode and Populate - handle both formats
         try:
-            card_ids = DeckGenerator.decode_deck_string(code)
+            if isinstance(code, list):
+                # Direct card IDs format
+                card_ids = code
+            else:
+                # Deckstring format
+                card_ids = DeckGenerator.decode_deck_string(code)
         except Exception as e:
-            card_ids = None
-            error_msg = str(e)
-            print(f"Error decoding deck: {e}")
+            card_ids = []
             
         if card_ids:
-            # Count cards
+            # Count
             counts = {}
-            for cid in card_ids:
-                counts[cid] = counts.get(cid, 0) + 1
-                
-            # Get card details
+            for cid in card_ids: counts[cid] = counts.get(cid, 0) + 1
+            
+            # Fetch Data
             db = CardDatabase.get_instance()
             if not db._loaded: db.load()
             
-            cards_info = []
-            unknown_count = 0
-            
-            for cid, count in counts.items():
-                if cid.startswith("DBF:"):
-                     unknown_count += 1
-                     cards_info.append((0, f"Unknown Card ({cid})", count))
-                     continue
-                     
+            rows = []
+            for cid, qty in counts.items():
                 card = db.get_card(cid)
                 if card:
-                    cards_info.append((card.cost, card.name, count))
+                    rows.append({
+                        "cost": card.cost,
+                        "name": card.name,
+                        "qty": qty,
+                        "rarity": card.rarity
+                    })
                 else:
-                    cards_info.append((0, f"Unknown ID: {cid}", count))
+                    # Fallback for unknown
+                    rows.append({
+                        "cost": 0,
+                        "name": f"Unknown ({cid})",
+                        "qty": qty,
+                        "rarity": 0 # COMMON
+                    })
             
-            # Sort by cost
-            cards_info.sort(key=lambda x: x[0])
+            # Sort by Cost then Name
+            rows.sort(key=lambda x: (x['cost'], x['name']))
             
-            # Format text
-            content = f"**Total Cards:** {len(card_ids)}\n\n"
-            for cost, cname, count in cards_info:
-                content += f"[{cost}] {cname}"
-                if count > 1:
-                    content += f"  x{count}"
-                content += "\n\n" # Double newline for markdown spacing
+            table.setRowCount(len(rows))
+            
+            # Rarity Colors
+            rarity_colors = {
+                1: "#d1d5db", # COMMON (Gray)
+                2: "#ffffff", # FREE (White)
+                3: "#3b82f6", # RARE (Blue)
+                4: "#a855f7", # EPIC (Purple)
+                5: "#f59e0b", # LEGENDARY (Orange)
+            }
+            
+            for i, row in enumerate(rows):
+                # Cost
+                cost_item = QTableWidgetItem(str(row['cost']))
+                cost_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+                cost_item.setForeground(Qt.GlobalColor.cyan) # Mana color
                 
-            text_area.setMarkdown(content)
-        elif card_ids is not None:
-             text_area.setText("Deck decoded but no cards found (Empty List).")
+                # Name
+                name_item = QTableWidgetItem(row['name'])
+                rarity_col = rarity_colors.get(int(row.get('rarity', 1)), "#d1d5db")
+                name_item.setForeground(QColor(rarity_col))
+                font = name_item.font()
+                if int(row.get('rarity', 0)) == 5:
+                    font.setBold(True)
+                name_item.setFont(font)
+                
+                # Qty
+                qty_val = row['qty']
+                qty_str = f"x{qty_val}"
+                if int(row.get('rarity', 0)) == 5: # Legendaries are unique usually (except accidental dupes)
+                     qty_str = "★" # Star for legendary
+                
+                qty_item = QTableWidgetItem(qty_str)
+                qty_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+                
+                table.setItem(i, 0, cost_item)
+                table.setItem(i, 1, name_item)
+                table.setItem(i, 2, qty_item)
+                
         else:
-             text_area.setText(f"Error decoding deck.\nDetails: {error_msg}")
-        
-        layout.addWidget(text_area)
+            table.setRowCount(1)
+            table.setItem(0, 1, QTableWidgetItem("Error decoding deck code."))
+
+        # Footer Actions
+        btn_box = QHBoxLayout()
+        copy_btn = QPushButton("Copy Code")
+        copy_btn.clicked.connect(lambda: QApplication.clipboard().setText(code)) # Need QApplication import
+        copy_btn.setStyleSheet("background-color: #475569;")
         
         close_btn = QPushButton("Close")
         close_btn.clicked.connect(dialog.accept)
-        close_btn.setStyleSheet("background-color: #3b82f6; padding: 8px; border-radius: 4px;")
-        layout.addWidget(close_btn)
+        close_btn.setStyleSheet("background-color: #3b82f6; font-weight: bold;")
+        
+        btn_box.addWidget(copy_btn)
+        btn_box.addWidget(close_btn)
+        layout.addLayout(btn_box)
         
         dialog.exec()

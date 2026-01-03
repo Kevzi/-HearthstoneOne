@@ -18,56 +18,57 @@ from ai.actions import Action
 
 def _play_game_worker(model_state, input_dim, action_dim, mcts_sims, game_idx, verbose):
     """Worker function for multiprocessing."""
-    # Crucial for Windows: limit torch threads per process to save RAM
-    torch.set_num_threads(1)
-    
-    # Each process needs its own model instance on CPU
-    model = HearthstoneModel(input_dim, action_dim)
-    model.load_state_dict(model_state)
-    model.eval()
-    
-    encoder = FeatureEncoder()
-    env = HearthstoneGame()
-    env.reset(randomize_first=True)
-    
-    trajectory = []
-    step_count = 0
-    max_steps = 150
-    
-    while not env.is_game_over and step_count < max_steps:
-        root_game_state = env.game.clone()
-        mcts = MCTS(model, encoder, root_game_state, num_simulations=mcts_sims)
-        mcts_probs = mcts.search(root_game_state)
+    try:
+        # Crucial for Windows: limit torch threads per process to save RAM
+        torch.set_num_threads(1)
         
-        encoded_state = encoder.encode(env.get_state())
-        p_id = 1 if env.current_player == env.game.players[0] else 2
+        # Each process needs its own model instance on CPU
+        model = HearthstoneModel(input_dim, action_dim)
+        model.load_state_dict(model_state)
+        model.eval()
         
-        trajectory.append((encoded_state, mcts_probs, p_id))
+        encoder = FeatureEncoder()
+        env = HearthstoneGame()
+        env.reset(randomize_first=True)
         
-        # Pick action
-        # Epsilon-greedy for P2 to break the bias
-        if p_id == 2 and np.random.random() < 0.2:
-            action_idx = np.random.choice(len(mcts_probs))
-        else:
-            action_idx = np.random.choice(len(mcts_probs), p=mcts_probs)
+        trajectory = []
+        step_count = 0
+        max_steps = 150
         
-        # Execute action
-        action = Action.from_index(action_idx)
-        try:
-            env.step(action)
-        except Exception as e:
-            if verbose:
-                print(f"Worker Error in game {game_idx}: {e}")
-            break # Stop game on error
+        while not env.is_game_over and step_count < max_steps:
+            root_game_state = env.game.clone()
+            mcts = MCTS(model, encoder, root_game_state, num_simulations=mcts_sims)
+            mcts_probs = mcts.search(root_game_state)
             
-        step_count += 1
-        
-    # Determine winner
-    winner = 0
-    if env.game.winner:
-        winner = 1 if env.game.winner == env.game.players[0] else 2
-        
-    return trajectory, winner
+            encoded_state = encoder.encode(env.get_state())
+            p_id = 1 if env.current_player == env.game.players[0] else 2
+            
+            trajectory.append((encoded_state, mcts_probs, p_id))
+            
+            # Pick action
+            # Epsilon-greedy for P2 to break the bias
+            if p_id == 2 and np.random.random() < 0.2:
+                action_idx = np.random.choice(len(mcts_probs))
+            else:
+                action_idx = np.random.choice(len(mcts_probs), p=mcts_probs)
+            
+            # Execute action
+            action = Action.from_index(action_idx)
+            env.step(action)
+                
+            step_count += 1
+            
+        # Determine winner
+        winner = 0
+        if env.game.winner:
+            winner = 1 if env.game.winner == env.game.players[0] else 2
+            
+        return trajectory, winner
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise e
 
 class DataCollector:
     def __init__(self, model: HearthstoneModel, buffer: ReplayBuffer, num_workers: int = 4):
@@ -95,18 +96,44 @@ class DataCollector:
         
         completed_games = 0
         
-        with ProcessPoolExecutor(max_workers=self.num_workers) as executor:
-            futures = []
+        if self.num_workers == 0:
+            # Sequential execution for debugging/stability
             for i in range(num_games):
-                futures.append(executor.submit(
-                    _play_game_worker, 
-                    cpu_model_state,
-                    self.model.input_dim,
-                    self.model.action_dim,
-                    mcts_sims,
-                    i,
-                    verbose
-                ))
+                try:
+                    trajectory, winner = _play_game_worker(
+                        cpu_model_state,
+                        self.model.input_dim,
+                        self.model.action_dim,
+                        mcts_sims,
+                        i,
+                        verbose
+                    )
+                    self.buffer.add_game(trajectory, winner)
+                    winners[winner] = winners.get(winner, 0) + 1
+                    
+                    completed_games += 1
+                    elapsed = time.time() - start_time
+                    avg_time = elapsed / completed_games if completed_games > 0 else 0
+                    
+                    winner_str = f"Player {winner}" if winner > 0 else "Draw/Timeout"
+                    print(f"[{completed_games}/{num_games}] Game completed. Winner: {winner_str}. Buffer: {len(self.buffer)}. Avg: {avg_time:.2f}s/game")
+                except Exception as e:
+                    print(f"Sequential game failed: {e}")
+                    
+        else:
+            # Parallel execution
+            with ProcessPoolExecutor(max_workers=self.num_workers) as executor:
+                futures = []
+                for i in range(num_games):
+                    futures.append(executor.submit(
+                        _play_game_worker, 
+                        cpu_model_state,
+                        self.model.input_dim,
+                        self.model.action_dim,
+                        mcts_sims,
+                        i,
+                        verbose
+                    ))
             
             for future in as_completed(futures):
                 try:
