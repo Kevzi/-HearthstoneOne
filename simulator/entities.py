@@ -51,6 +51,7 @@ class CardData:
     secret: bool = False
     discover: bool = False
     outcast: bool = False
+    cleave: bool = False
     
     # New mechanics (2020+)
     # Expansion specific flags

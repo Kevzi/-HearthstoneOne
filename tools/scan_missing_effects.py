@@ -31,7 +31,7 @@ def scan_decks():
     
     total_missing = 0
     
-    for deck_code, (cls_name, deck_name) in decks_map.items():
+    for cls_name, deck_name, deck_data in decks_map:
         print(f"--- {deck_name} ({cls_name}) ---")
         
         # Manually decode to get card IDs directly
@@ -40,14 +40,25 @@ def scan_decks():
             if not DeckGenerator._dbf_map:
                 DeckGenerator._build_dbf_map()
                 
-            from hearthstone.deckstrings import parse_deckstring
-            decoded = parse_deckstring(deck_code)
-            cards = decoded[0]
-            
+            if isinstance(deck_data, str):
+                from hearthstone.deckstrings import parse_deckstring
+                decoded = parse_deckstring(deck_data)
+                cards = decoded[0]
+            else:
+                # Direct card IDs list
+                # Convert card IDs back to something the loop can handle or just use card_id
+                cards = [(0, 1)] # Dummy just to trigger the loop if needed, but better logic below
+                
             missing_in_this_deck = []
             
-            for dbf_id, count in cards:
-                card_id = DeckGenerator._dbf_map.get(dbf_id)
+            # If it's a list, we already have card IDs
+            iter_cards = cards if isinstance(deck_data, str) else [(None, cid) for cid in deck_data]
+
+            for dbf_id, item in iter_cards:
+                if isinstance(item, str):
+                    card_id = item
+                else:
+                    card_id = DeckGenerator._dbf_map.get(dbf_id)
                 
                 if not card_id:
                     print(f"  [X] CRITICAL: DBF {dbf_id} still not found in JSON data!")

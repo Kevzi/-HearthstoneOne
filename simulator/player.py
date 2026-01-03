@@ -97,6 +97,10 @@ class Player(Entity):
         # Sideboard (Zilliax, E.T.C. Band)
         self.sideboard: Dict[str, List[str]] = {}  # key: parent card_id, value: list of child card_ids
         
+        # Temp reductions
+        self.next_spell_cost_reduction = 0
+        self.next_hero_power_cost_reduction = 0
+        
         # Status
         self.conceded: bool = False
         self.opponent: Optional[Player] = None
@@ -411,8 +415,14 @@ class Player(Entity):
         if card not in self.hand:
             return False
         
+        # Calculate current cost via game if available
+        if self._game:
+            current_cost = self._game.get_card_cost(self, card)
+        else:
+            current_cost = card.cost
+            
         available_mana = self.mana + self.temp_mana
-        if card.cost > available_mana:
+        if current_cost > available_mana:
             return False
         
         # Check board space for minions

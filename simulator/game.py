@@ -597,6 +597,26 @@ class Game:
                 return player
         return None
     
+    def get_card_cost(self, player: Player, card: Card) -> int:
+        """Calculate the current cost of a card including all modifiers."""
+        base_cost = card.cost
+        
+        # 1. External modifiers (mod_cost)
+        modified_cost = base_cost + card.mod_cost
+        
+        # 2. Player-wide dynamic reductions
+        if card.card_type == CardType.SPELL:
+            modified_cost -= player.next_spell_cost_reduction
+        elif card.card_type == CardType.HERO_POWER: # Just in case it's used for card-like HP
+            modified_cost -= player.next_hero_power_cost_reduction
+            
+        # 3. Dynamic modifiers from script
+        cost_modifier_handler = self._get_effect_handler(card.card_id, "get_cost_modifier")
+        if cost_modifier_handler:
+            modified_cost += cost_modifier_handler(self, player, card)
+            
+        return max(0, modified_cost)
+
     def setup(self, player1: Player, player2: Player) -> None:
         """Setup a new game with two players."""
         self.players = [player1, player2]
@@ -739,7 +759,8 @@ class Game:
         is_echo = card.data.echo
         
         # Spend mana
-        if not player.spend_mana(card.cost):
+        current_cost = self.get_card_cost(player, card)
+        if not player.spend_mana(current_cost):
             return False
             
         # === FINALE: Check if mana is 0 after spending ===
@@ -966,8 +987,11 @@ class Game:
     
     def _play_spell(self, card: Card, target: Optional[Card] = None) -> bool:
         """Play a spell card."""
-        player = self.current_player
         player.spells_played_this_turn += 1
+        
+        # Consume Preparation reduction
+        if player.next_spell_cost_reduction > 0:
+            player.next_spell_cost_reduction = 0
         
         # === TRIGGER SECRETS BEFORE SPELL EFFECT ===
         # Check for spell-triggered secrets (e.g., Counterspell, Spellbender)
@@ -1067,6 +1091,7 @@ class Game:
         
         # === TRIGGER SECRETS BEFORE ATTACK ===
         # Check for attack-triggered secrets (e.g., Explosive Trap, Misdirection)
+        self.fire_event("on_minion_attack", attacker)
         self.trigger_secrets("attack", player, attacker=attacker, defender=defender)
         
         # Check if attacker is still alive after secret
@@ -1088,6 +1113,19 @@ class Game:
         
         # Deal damage
         self.deal_damage(defender, attacker_damage, attacker)
+        
+        # === CLEAVE: Also damage neighbors ===
+        if card_data := getattr(attacker, 'data', None):
+            if getattr(card_data, 'cleave', False) and defender.card_type == CardType.MINION:
+                neighbors = []
+                board = defender.owner.board
+                if defender in board:
+                    idx = board.index(defender)
+                    if idx > 0: neighbors.append(board[idx-1])
+                    if idx < len(board) - 1: neighbors.append(board[idx+1])
+                
+                for n in neighbors:
+                    self.deal_damage(n, attacker_damage, attacker)
         
         # Defender hits back (unless attacking a hero with a weapon)
         if defender.card_type != CardType.HERO or not isinstance(attacker, Hero):
@@ -1112,8 +1150,12 @@ class Game:
         """Deal damage to a target."""
         if target.immune or target.dormant > 0:
             return 0
-        
-        # Divine Shield absorbs damage
+            
+        # Modify damage amount (auras like Talgath)
+        # Using a dictionary to pass mutable value
+        modifier = {"amount": amount}
+        self.fire_event("on_calculate_damage", target, source, modifier)
+        amount = modifier["amount"]
         if target.divine_shield:
             target._divine_shield = False
             self.fire_event("on_divine_shield_lost", target)

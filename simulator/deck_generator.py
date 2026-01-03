@@ -1,5 +1,5 @@
 import random
-from typing import List, Dict, Optional, Tuple
+from typing import List, Dict, Optional, Tuple, Any
 from .card_loader import CardDatabase, CardClass, CardType
 
 class DeckGenerator:

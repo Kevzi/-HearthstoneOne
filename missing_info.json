@@ -1,0 +1,142 @@
+{
+  "BG31_BOB": {
+    "name": "Bob the Bartender",
+    "text": "[x]<b>Battlecry:</b> Choose\nan action from the\nBattlegrounds!",
+    "set": "EVENT"
+  },
+  "CORE_BT_292": {
+    "name": "Hand of A'dal",
+    "text": "Give a minion +2/+1.\nDraw a card.",
+    "set": "CORE"
+  },
+  "CORE_EX1_144": {
+    "name": "Shadowstep",
+    "text": "Return a friendly minion to your hand. It\u00a0costs (2) less.",
+    "set": "CORE"
+  },
+  "CORE_EX1_145": {
+    "name": "Preparation",
+    "text": "The next spell you cast this turn costs (2) less.",
+    "set": "CORE"
+  },
+  "CORE_EX1_169": {
+    "name": "Innervate",
+    "text": "Gain 1 Mana Crystal this turn only.",
+    "set": "CORE"
+  },
+  "CORE_EX1_246": {
+    "name": "Hex",
+    "text": "Transform a minion into a 0/1 Frog with <b>Taunt</b>.",
+    "set": "CORE"
+  },
+  "CORE_GVG_061": {
+    "name": "Muster for Battle",
+    "text": "Summon three 1/1 Silver Hand Recruits. Equip a 1/4 Weapon.",
+    "set": "CORE"
+  },
+  "CORE_TOY_100": {
+    "name": "Gnomelia, S.A.F.E. Pilot",
+    "text": "[x]<b>Rush</b>. Also damages minions\nnext to whomever this attacks.\n<b>Deathrattle:</b> Deal 2 damage\nto all enemies.",
+    "set": "CORE"
+  },
+  "DINO_407": {
+    "name": "Mirrex, the Crystalline",
+    "text": "[x]While in your hand, this is a\n3/4 copy of the last minion\nyour opponent played.",
+    "set": "THE_LOST_CITY"
+  },
+  "EDR_253": {
+    "name": "Ursine Maul",
+    "text": "After your hero attacks, draw your highest Cost\u00a0card.",
+    "set": "EMERALD_DREAM"
+  },
+  "EDR_527": {
+    "name": "Ashamane",
+    "text": "[x]<b>Battlecry:</b> Fill your hand\nwith copies of cards from\nyour opponent's deck.\nThey cost (3) less.",
+    "set": "EMERALD_DREAM"
+  },
+  "FIR_907": {
+    "name": "Amirdrassil",
+    "text": "[x]Summon a 1-Cost minion.\nGain 1 Armor. Draw 1 card.\nRefresh 1 Mana |4(Crystal, Crystals).\n<i>(Improves each use!)</i>",
+    "set": "EMERALD_DREAM"
+  },
+  "FIR_939": {
+    "name": "Shadowflame Suffusion",
+    "text": "[x]Deal $2 damage.\n<b>Discover</b> a Warrior\nminion with a <b>Dark Gift</b>.",
+    "set": "EMERALD_DREAM"
+  },
+  "GDB_305": {
+    "name": "Solar Flare",
+    "text": "Deal $2 damage to all enemies. Costs (1) less for each Elemental you control.",
+    "set": "SPACE"
+  },
+  "GDB_456": {
+    "name": "Spontaneous Combustion",
+    "text": "Deal $4 damage to a random enemy. If you played an Elemental last turn, choose the target.",
+    "set": "SPACE"
+  },
+  "GDB_472": {
+    "name": "Talgath",
+    "text": "[x]Undamaged enemy minions\ntake double damage.\n<b>Combo:</b> Get a Backstab.",
+    "set": "SPACE"
+  },
+  "TIME_034": {
+    "name": "Stadium Announcer",
+    "text": "[x]<b>Rewind</b>\n<b>Battlecry:</b> Both players\nequip a random weapon.\nGive yours +1/+1.",
+    "set": "TIME_TRAVEL"
+  },
+  "TIME_211t1": {
+    "name": "The Well of Eternity",
+    "text": "Fill your hand\nwith random\n<b>Temporary</b> spells.",
+    "set": "TIME_TRAVEL"
+  },
+  "TIME_211t2": {
+    "name": "Zin-Azshari",
+    "text": "Summon a copy of a friendly minion.",
+    "set": "TIME_TRAVEL"
+  },
+  "TIME_702": {
+    "name": "Ebb and Flow",
+    "text": "Deal $3 damage.\nIf you played a minion while holding this,\ngain 5 Armor.",
+    "set": "TIME_TRAVEL"
+  },
+  "TIME_711": {
+    "name": "Flashback",
+    "text": "Summon two random 1-Cost minions from the past. <b>Combo:</b> With +1 Attack.",
+    "set": "TIME_TRAVEL"
+  },
+  "TIME_712": {
+    "name": "Dethrone",
+    "text": "Destroy a minion. <b>Combo:</b> Summon a random 8-Cost minion.",
+    "set": "TIME_TRAVEL"
+  },
+  "TIME_750": {
+    "name": "Precursory Strike",
+    "text": "Deal $3 damage.\nIf you're holding a minion that costs (5) or more, draw a minion.",
+    "set": "TIME_TRAVEL"
+  },
+  "TLC_220": {
+    "name": "Windswept Pageturner",
+    "text": "[x]After you summon an\nElemental, deal 3 damage\nto a random enemy.",
+    "set": "THE_LOST_CITY"
+  },
+  "TLC_222": {
+    "name": "Flight of the Firehawk",
+    "text": "Draw two minions of different minion types. Give them +2/+2.",
+    "set": "THE_LOST_CITY"
+  },
+  "TLC_438": {
+    "name": "Violet Treasuregill",
+    "text": "[x]<b>Battlecry:</b> Cast a random\nspell from your deck that\ncosts (2) or less <i>(targets\nthis if possible)</i>.",
+    "set": "THE_LOST_CITY"
+  },
+  "TLC_623": {
+    "name": "Stonecarver",
+    "text": "At the end of your turn, give a random friendly damaged minion +2/+2.",
+    "set": "THE_LOST_CITY"
+  },
+  "TTN_908": {
+    "name": "Crusader Aura",
+    "text": "Whenever a friendly minion attacks, give it +2/+1. Lasts 3 turns.",
+    "set": "CORE"
+  }
+}
