@@ -1,29 +1,58 @@
-# HearthstoneOne AI - Documentation
+# 📚 Documentation HearthstoneOne
 
-Ce dossier contient la documentation technique et le suivi du projet HearthstoneOne.
+Bienvenue dans la documentation technique du projet.
 
-## Architecture
+---
 
-Le projet a pivoté d'une dépendance à `Fireplace` vers un **Simulateur Universel** capable de supporter toutes les cartes du jeu (Standard, Wild, Classic) grâce à la génération de code pilotée par LLM.
+## 📁 Contenu
 
-## Index des Documents
+| Fichier | Description |
+|---------|-------------|
+| [TASKS.md](TASKS.md) | Feuille de route et suivi des tâches |
+| [CHANGELOG.md](CHANGELOG.md) | Historique des modifications |
+| [PHASE0_UNIVERSAL_SIMULATOR.md](PHASE0_UNIVERSAL_SIMULATOR.md) | Architecture du simulateur |
+| [SIMULATOR_ANALYSIS.md](SIMULATOR_ANALYSIS.md) | Analyse comparative des simulateurs |
 
-| Document | Description |
-|----------|-------------|
-| [TASKS.md](TASKS.md) | Checklist détaillée des tâches et roadmap |
-| [PHASE0_UNIVERSAL_SIMULATOR.md](PHASE0_UNIVERSAL_SIMULATOR.md) | **Architecture Actuelle** : Spécifications du nouveau moteur |
-| [SIMULATOR_ANALYSIS.md](SIMULATOR_ANALYSIS.md) | Analyse comparative ayant mené au choix du simulateur universel |
-| [PHASE1_FIREPLACE.md](PHASE1_FIREPLACE.md) | *Legacy* : Documentation de l'approche initiale via Fireplace |
-| [CHANGELOG.md](../CHANGELOG.md) | Historique des versions et changements majeurs |
+---
 
-## État du Projet
+## 🏗️ Architecture Globale
 
-### 🚀 Simulateur Universel (Actuel)
-- Moteur de jeu core implémenté (Events, Triggers, Trackers).
-- Système de génération de cartes par LLM opérationnel.
-- Support pour les mécaniques complexes (Gel, Découverte, Historique).
-- Intégration RL terminée (le wrapper `ai/` utilise le nouveau moteur).
+```
+HearthstoneOne
+├── ai/                # Intelligence Artificielle
+├── simulator/         # Moteur de jeu
+├── runtime/           # Interface temps réel
+├── overlay/           # Interface graphique
+├── training/          # Entraînement IA
+└── docs/              # Documentation (vous êtes ici)
+```
 
-### ✅ Phase de Recherche & MVP
-- Analyse des simulateurs existants terminée.
-- Preuve de concept avec Fireplace validée (mais abandonnée pour cause de limites de sets).
+---
+
+## 🔗 Liens Utiles
+
+- **Repository** : [GitHub](https://github.com/Kevzi/-HearthstoneOne)
+- **Données Cartes** : [hearthstone_data](https://github.com/HearthSim/python-hearthstone)
+
+---
+
+## 📖 Guides
+
+### Lancer l'Assistant
+
+```bash
+cd HearthstoneOne
+python runtime/live_assistant.py
+```
+
+### Entraîner l'IA
+
+```bash
+python training/trainer.py
+```
+
+### Évaluer le Modèle
+
+```bash
+python evaluation.py
+```

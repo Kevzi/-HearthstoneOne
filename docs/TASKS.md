@@ -1,55 +1,152 @@
-## Phase 0: Architecture Simulateur Universel 🚀
-- [x] Concevoir l'architecture du nouveau simulateur
-- [x] Créer le moteur de jeu de base (sans effets de cartes)
-- [x] Implémenter le système de triggers et d'événements
-- [x] Organiser les effets par expansion (Legacy, Core, etc.)
-- [x] Implémenter le système de génération d'effets via LLM (Prompt prêt)
-- [x] Ajouter les trackers d'historique (SpellsPlayed, Graveyard, DamageTaken)
-- [x] Valider avec des cartes complexes (ex: **Rembobinage** implémenté et fonctionnel)
-- [x] Intégrer avec le wrapper RL (Migration depuis Fireplace terminée)
-- [x] Standard Set 100% (mix d'effets réels et placeholders fonctionnels)
-- [x] Across the Timeways (TIME_TRAVEL) - Toutes les légendes iconiques implémentées et testées
-- [/] Générer les effets pour toutes les cartes (~34,000) - En cours...
+# 📋 HearthstoneOne — Feuille de Route
 
-## Phase 1: Setup Fireplace ✅
-- [x] Installer et tester Fireplace
-- [x] Créer le wrapper `game_wrapper.py`
-- [x] Définir les structures de données (`game_state.py`, `card.py`, `player.py`, `actions.py`)
-- [x] Créer les tests pour le wrapper
-- [x] Valider avec une partie simple
+> Dernière mise à jour : 2026-01-03
 
-> **Note**: Phase 1 réutilisable - nos structures de données et wrapper sont compatibles avec un nouveau simulateur.
+---
 
-## Phase 2: Self-Play Engine ✅
-- [x] `self_play.py` - Moteur de parties automatisées
-- [x] Tests self-play
+## ✅ Phase 0: Simulateur Universel
 
-## Phase 3: Core AI (MCTS + NN) ✅
-- [x] `model.py` - Neural Network (Actor-Critic)
-- [x] `encoder.py` - Encodage état/actions
-- [x] `mcts.py` - Monte Carlo Tree Search
-- [x] `game.py` - Game State Cloning pour simulation
-- [x] Tests AI core
+| Tâche | Statut |
+|-------|--------|
+| Architecture du simulateur | ✅ |
+| Moteur de jeu de base | ✅ |
+| Système de triggers et événements | ✅ |
+| Génération d'effets via LLM | ✅ |
+| Trackers d'historique | ✅ |
+| Validation cartes complexes (Rembobinage) | ✅ |
+| Wrapper RL | ✅ |
 
-## Phase 4: Training Loop & Data ✅
-- [x] `ai/replay_buffer.py` - Stockage optimisé des trajectoires (States, Pi, Z)
-- [x] `training/data_collector.py` - Script de self-play parallèle avec MCTS
-- [x] `training/trainer.py` - Boucle d'optimisation PyTorch
-- [x] Entraînement initial (Proof of Life) - Validé (Loss qui descend)
+---
 
-## Phase 5: Evaluation & Optimisation 🚧
-- [x] Script `evaluation.py` (Arena basique)
-- [ ] Optimisation MCTS (Vitesse d'exécution critique !)
-- [ ] Hyperparameter Tuning
+## ✅ Phase 1: Structures de Données
 
-## Phase 6: Interface Graphique (GUI) 🔜
-- [ ] `gui/main_window.py` (PyQt6)
-- [ ] Dashboard des stats d'entraînement
-- [ ] Visualisation du Replay Buffer
+| Tâche | Statut |
+|-------|--------|
+| `game_wrapper.py` | ✅ |
+| `game_state.py` | ✅ |
+| `actions.py` | ✅ |
+| Tests unitaires | ✅ |
 
-## Phase 7: Overlay & Live Game 🔜
-- [x] `runtime/log_watcher.py` (Parser le Power.log du vrai jeu)
-- [x] `runtime/parser.py` (Convertir Logs -> Simulator Actions) - *Base fonctionnelle (Zones)*
-- [ ] `runtime/parser.py` (Parsing Avancé: Attaques, Dégâts, Secrets)
-- [ ] `overlay/overlay_window.py` (Fenêtre transparente)
-- [ ] Intégration IA en temps réel (Inférence ONNX)
+---
+
+## ✅ Phase 2: Self-Play Engine
+
+| Tâche | Statut |
+|-------|--------|
+| `self_play.py` | ✅ |
+| Tests self-play | ✅ |
+
+---
+
+## ✅ Phase 3: Core AI (MCTS + Neural Network)
+
+| Tâche | Statut |
+|-------|--------|
+| `model.py` — Réseau Actor-Critic | ✅ |
+| `encoder.py` — Encodage état/actions | ✅ |
+| `mcts.py` — Monte Carlo Tree Search | ✅ |
+| Game State Cloning | ✅ |
+| Tests AI core | ✅ |
+
+---
+
+## ✅ Phase 4: Training Loop
+
+| Tâche | Statut |
+|-------|--------|
+| `replay_buffer.py` — Stockage trajectoires | ✅ |
+| `data_collector.py` — Self-play parallèle | ✅ |
+| `trainer.py` — Boucle PyTorch | ✅ |
+| Proof of Life (Loss qui descend) | ✅ |
+
+---
+
+## 🚧 Phase 5: Évaluation & Optimisation
+
+| Tâche | Statut |
+|-------|--------|
+| Script `evaluation.py` | ✅ |
+| Optimisation MCTS | ⏳ |
+| Hyperparameter Tuning | ⏳ |
+
+---
+
+## ⏳ Phase 6: Interface Graphique (GUI)
+
+| Tâche | Statut |
+|-------|--------|
+| `gui/main_window.py` | ⏳ |
+| Dashboard stats | ⏳ |
+| Visualisation Replay Buffer | ⏳ |
+
+---
+
+## ✅ Phase 7: Runtime (Logs & Parser)
+
+| Tâche | Statut |
+|-------|--------|
+| `runtime/log_watcher.py` — Surveillance Power.log | ✅ |
+| Auto-reconnexion (polling) | ✅ |
+| `runtime/parser.py` — Parsing TAG_CHANGE | ✅ |
+| `runtime/parser.py` — Parsing FULL_ENTITY | ✅ |
+| Extraction ZONE, DAMAGE, CONTROLLER | ✅ |
+| Extraction zonePos | ✅ |
+| Gestion SETASIDE (Discover) | ✅ |
+| Tests parser | ✅ |
+
+---
+
+## ✅ Phase 8: Overlay Graphique
+
+| Tâche | Statut |
+|-------|--------|
+| `overlay/overlay_window.py` — Fenêtre transparente | ✅ |
+| `overlay/geometry.py` — Calcul positions écran | ✅ |
+| Flèches vertes (cartes ciblées) | ✅ |
+| Cercles dorés (cartes sans cible) | ✅ |
+| `runtime/live_assistant.py` — Orchestrateur | ✅ |
+| Suggestions de cartes | ✅ |
+| Suggestions d'attaques | ✅ |
+| Détection Taunt | ✅ |
+| Filtre par mana | ✅ |
+
+---
+
+## ⏳ Phase 9: Fonctionnalités Avancées
+
+| Tâche | Statut |
+|-------|--------|
+| Pouvoir Héroïque (suggestion + overlay) | ⏳ |
+| Lieux / Locations | ⏳ |
+| Multi-flèches (plusieurs suggestions) | ⏳ |
+| Parsing mana (tag RESOURCES) | ⏳ |
+| Calibrage géométrie écran | ⏳ |
+
+---
+
+## ⏳ Phase 10: Intégration IA Entraînée
+
+| Tâche | Statut |
+|-------|--------|
+| Connecter `model.py` à `live_assistant.py` | ⏳ |
+| MCTS en temps réel (inférence) | ⏳ |
+| Export ONNX | ⏳ |
+| Inférence GPU optimisée | ⏳ |
+
+---
+
+## 📊 Résumé
+
+| Phase | Statut |
+|-------|--------|
+| Phase 0 — Simulateur | ✅ Terminée |
+| Phase 1 — Structures | ✅ Terminée |
+| Phase 2 — Self-Play | ✅ Terminée |
+| Phase 3 — Core AI | ✅ Terminée |
+| Phase 4 — Training | ✅ Terminée |
+| Phase 5 — Évaluation | 🚧 En cours |
+| Phase 6 — GUI | ⏳ À venir |
+| Phase 7 — Runtime | ✅ Terminée |
+| Phase 8 — Overlay | ✅ Terminée |
+| Phase 9 — Avancé | ⏳ À venir |
+| Phase 10 — Intégration | ⏳ À venir |

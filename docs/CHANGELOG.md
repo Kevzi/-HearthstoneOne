@@ -1,68 +1,72 @@
-# Changelog
+# 📜 Changelog
 
-Tous les changements notables de ce projet seront documentés ici.
-
-Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
+Toutes les modifications notables du projet HearthstoneOne.
 
 ---
 
-## [Unreleased]
+## [2026-01-03] — Live Assistant & Overlay
 
-### 🚧 En cours
-- **Phase 5**: Evaluation & Metrics
+### ✨ Ajouté
+- **`runtime/live_assistant.py`** — Orchestrateur complet combinant Parser + Overlay + IA (dummy)
+- **`overlay/overlay_window.py`** — Fenêtre transparente PyQt6 avec dessin de flèches et cercles
+- **`overlay/geometry.py`** — Calcul des positions écran (main, board, héros)
+- **`runtime/parser.py`** — Support FULL_ENTITY + format réel Hearthstone
+- Extraction de `zonePos` depuis les logs
+- Suggestions d'attaque (créature → cible)
+- Détection des Taunt adverses
+- Cercles dorés pour les cartes sans cible
 
-### Added
-- **Phase 4 (Training Pipeline)**:
-    - `training/trainer.py`: Boucle complète AlphaZero (Self-play -> Train -> Checkpoint). Validation positive (Loss decreasing).
-    - `training/data_collector.py`: Génération de parties self-play avec MCTS.
-    - `ai/replay_buffer.py`: Gestion de la mémoire d'expérience (Trajectoires & Value Targets).
-- **Phase 3 (Core AI)**:
-    - **FeatureEncoder** (`ai/encoder.py`): Encodage vectoriel de l'état du jeu (690 dimensions).
-    - **HearthstoneModel** (`ai/model.py`): Architecture Neuronale Actor-Critic (Policy Head + Value Head).
-    - **MCTS** (`ai/mcts.py`): Algorithme de recherche Monte Carlo Tree Search guidé par le réseau de neurones.
-    - **Game Cloning**: Implémentation du "Deep Copy" (`Game.clone()`) permettant au MCTS de simuler des futurs potentiels.
-- **Custom Zilliax Deluxe 3000**:
-    - Support des modules combinés (Perfect, Haywire, Twin).
-    - Injection dynamique de variantes de cartes (`ZILLIAX_ROGUE`, `ZILLIAX_DH`, etc.).
-- **Tests Core AI**: Suite de tests unitaires (`tests/test_ai_core.py`) validant l'encodeur, le modèle, le clonage et le MCTS.
+### 🔧 Modifié
+- **`runtime/log_watcher.py`** — Auto-reconnexion si lancé avant Hearthstone
+- **`runtime/parser.py`** — Parsing robuste avec regex flexibles
+- **`simulator/player.py`** — Ajout de `setaside` et `choices`
+- **`simulator/factory.py`** — Correction assignation contrôleur
 
----
-
-## [0.3.0] - 2026-01-02
-
-### Added
-- **Simulateur Universel** : Nouveau moteur de jeu moteur en Python (`simulator/`).
-- **Génération LLM** : Système de prompt et cache pour les effets de cartes (`card_generator/`).
-- **Triggers & Events** : Système de souscription (`on_turn_start`, `on_minion_death`, etc.).
-- **Trackers d'historique** : Suivi des sorts joués, dégâts subis, pioche, et cimetière.
-- **Support Mécaniques** : Gel, Spell Damage, Discovery (Découverte).
-- **Intégration RL** : Refonte de `ai/game_wrapper.py` pour utiliser le nouveau moteur.
-- **Validation** : Implémentation réussie de cartes complexes comme *Rembobinage (Rewind)*.
-
-### Changed
-- Documentation mise à jour dans `docs/` pour refléter la nouvelle architecture.
-- `ai/card.py` et `ai/player.py` enrichis pour supporter les types du nouveau simulateur.
-
-### Fixed
-- Problème de limitation des cartes (Fireplace) résolu par le passage au moteur universel.
+### 📚 Documenté
+- `README.md` entièrement réécrit avec diagrammes Mermaid
+- `docs/TASKS.md` mis à jour avec toutes les phases
 
 ---
 
-## [0.2.0] - 2026-01-02
+## [2026-01-02] — Training Pipeline
 
-### Added
-- Wrapper Fireplace complet (`ai/game_wrapper.py`)
-- Structures de données: `card.py`, `player.py`, `actions.py`, `game_state.py`
-- 41 tests unitaires (83% coverage)
+### ✨ Ajouté
+- **`training/trainer.py`** — Boucle d'entraînement PyTorch
+- **`training/data_collector.py`** — Collecte de trajectoires via self-play
+- **`ai/replay_buffer.py`** — Stockage optimisé des données
 
-### ⚠️ Obsolete
-- L'approche Fireplace est désormais archivée car limitée aux cartes de 2017.
+### 🧪 Testé
+- Proof of Life : Loss qui descend après quelques itérations
 
 ---
 
-## [0.1.0] - 2026-01-02
+## [2026-01-01] — Core AI
 
-### Added
-- Structure initiale du projet
-- README avec documentation complète
-- requirements.txt
+### ✨ Ajouté
+- **`ai/model.py`** — Réseau Actor-Critic (Policy + Value heads)
+- **`ai/mcts.py`** — Monte Carlo Tree Search avec UCB
+- **`ai/encoder.py`** — Encodage état de jeu en tenseur (690 dimensions)
+- **`evaluation.py`** — Script d'évaluation basique
+
+---
+
+## [2025-12-31] — Simulateur Universel
+
+### ✨ Ajouté
+- **`simulator/game.py`** — Moteur de jeu complet
+- **`simulator/player.py`** — Gestion joueur (main, board, deck)
+- **`simulator/entities.py`** — Cartes, Serviteurs, Héros, Pouvoirs
+- **`simulator/card_loader.py`** — Chargement depuis hearthstone_data
+- **`simulator/enums.py`** — Énumérations (Zone, CardType, etc.)
+
+### 🔧 Modifié
+- Migration complète depuis Fireplace vers simulateur custom
+
+---
+
+## [2025-12-30] — Setup Initial
+
+### ✨ Ajouté
+- Structure du projet
+- `requirements.txt`
+- Architecture de base
