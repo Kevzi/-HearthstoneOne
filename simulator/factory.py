@@ -48,4 +48,34 @@ def create_card(card_id: str, controller: 'Player') -> Card:
         entity = Card(data, game)
         
     entity.controller = controller
+
+    # === ZILLIAX DELUXE 3000 ASSEMBLY ===
+    if card_id == "TOY_330" and controller and hasattr(controller, 'sideboard'):
+        # Check if we have Zilliax modules in sideboard
+        zilliax_modules = controller.sideboard.get("TOY_330", [])
+        if zilliax_modules:
+            # Combine up to 2 modules
+            for module_id in zilliax_modules[:2]:
+                module_data = db._cards.get(module_id)
+                if module_data:
+                    # Add stats and cost
+                    entity._attack += module_data.attack
+                    entity._health += module_data.health
+                    entity._max_health += module_data.health
+                    entity._cost += module_data.cost
+                    
+                    # Copy keywords and mechanics
+                    if module_data.taunt: entity._taunt = True
+                    if module_data.divine_shield: entity._divine_shield = True
+                    if module_data.rush: entity._rush = True
+                    if module_data.lifesteal: entity._lifesteal = True
+                    if module_data.reborn: entity._reborn = True
+                    if module_data.windfury: entity._windfury = True
+                    if module_data.stealth: entity._stealth = True
+                    
+                    # Store module info
+                    if not hasattr(entity, 'zilliax_modules'):
+                        entity.zilliax_modules = []
+                    entity.zilliax_modules.append(module_id)
+
     return entity

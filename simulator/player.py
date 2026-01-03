@@ -94,6 +94,9 @@ class Player(Entity):
         # Starship Pieces
         self.starship_pieces: List[str] = []  # IDs of pieces collected
         
+        # Sideboard (Zilliax, E.T.C. Band)
+        self.sideboard: Dict[str, List[str]] = {}  # key: parent card_id, value: list of child card_ids
+        
         # Status
         self.conceded: bool = False
         self.opponent: Optional[Player] = None

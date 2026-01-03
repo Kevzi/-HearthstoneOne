@@ -89,19 +89,20 @@ class HearthstoneGame:
         import random as rnd
         
         # Use META DECKS for training (competitive decks)
+        sideboard1, sideboard2 = {}, {}
         if deck1 is None and deck2 is None:
             # Random meta deck for each player (Mixed Matches)
-            class1, deck1_ids, _ = DeckGenerator.get_random_meta_deck()
-            class2, deck2_ids, _ = DeckGenerator.get_random_meta_deck()
+            class1, deck1_ids, _, sideboard1 = DeckGenerator.get_random_meta_deck()
+            class2, deck2_ids, _, sideboard2 = DeckGenerator.get_random_meta_deck()
         else:
             if deck1 is None:
-                class1, deck1_ids, _ = DeckGenerator.get_random_meta_deck()
+                class1, deck1_ids, _, sideboard1 = DeckGenerator.get_random_meta_deck()
             else:
                 deck1_ids = deck1
                 if class1 is None: class1 = "MAGE"
                 
             if deck2 is None:
-                class2, deck2_ids, _ = DeckGenerator.get_random_meta_deck()
+                class2, deck2_ids, _, sideboard2 = DeckGenerator.get_random_meta_deck()
             else:
                 deck2_ids = deck2
                 if class2 is None: class2 = "WARRIOR"
@@ -122,6 +123,8 @@ class HearthstoneGame:
         
         p1 = Player("Player1")
         p2 = Player("Player2")
+        p1.sideboard = sideboard1
+        p2.sideboard = sideboard2
         
         # Setup heroes
         h1_data = CardDatabase.get_card(hero1) or CardData(hero1, class1, card_type=CardType.HERO)

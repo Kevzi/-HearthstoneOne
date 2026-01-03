@@ -83,31 +83,39 @@ class DeckGenerator:
         if not decks_list:
             # Fallback
             cls = "MAGE"
-            return cls, DeckGenerator.get_random_deck(cls), "Random Mage"
+            return cls, DeckGenerator.get_random_deck(cls), "Random Mage", {}
             
         import random
         class_name, deck_name, deck_data = random.choice(decks_list)
         
         # Check format
+        sideboard = {}
         if isinstance(deck_data, list):
             # Direct card IDs format
             card_ids = deck_data
-        else:
+        elif isinstance(deck_data, str):
             # Deckstring format - decode it
-            card_ids = DeckGenerator.decode_deck_string(deck_data)
+            decoded = DeckGenerator.decode_deck_string(deck_data)
+            if decoded:
+                card_ids = decoded["cards"]
+                sideboard = decoded["sideboards"]
+            else:
+                card_ids = []
+        else:
+            card_ids = []
         
         # Ensure 30 cards
         if card_ids and len(card_ids) > 0:
              # Safety pad if partial
              while len(card_ids) < 30:
                  card_ids.append(card_ids[0])
-             return class_name, card_ids[:30], deck_name
-        
-        return class_name, DeckGenerator.get_random_deck(class_name), f"Random {class_name}"
+             return class_name, card_ids[:30], deck_name, sideboard
+         
+        return class_name, DeckGenerator.get_random_deck(class_name), f"Random {class_name}", {}
 
     @staticmethod
-    def decode_deck_string(deck_string: str) -> Optional[List[str]]:
-        """Decode a Hearthstone deck string to list of card IDs."""
+    def decode_deck_string(deck_string: str) -> Optional[Dict[str, Any]]:
+        """Decode a Hearthstone deck string to dict of cards and sideboards."""
         try:
             from hearthstone.deckstrings import parse_deckstring
             if not DeckGenerator._dbf_map:
@@ -115,20 +123,33 @@ class DeckGenerator:
                 
             decoded = parse_deckstring(deck_string)
             cards = decoded[0]
-            result = []
+            sideboards_raw = decoded[2]  # Format: list of (card_dbf_id, parent_dbf_id)
+            
+            # 1. Main deck cards
+            result_cards = []
             for dbf_id, count in cards:
-                # Filter out corrupted sideboard entries:
-                # - count > 2 is impossible in a normal deck (max 2 copies, 1 for legendary)
-                # - dbf_id < 100 are placeholders/delimiters, not real cards
                 if count > 2 or dbf_id < 100:
                     continue
-                    
                 card_id = DeckGenerator._dbf_map.get(dbf_id)
                 if card_id:
-                    result.extend([card_id] * count)
+                    result_cards.extend([card_id] * count)
                 else:
-                    result.extend([f"DBF:{dbf_id}"] * count)
-            return result
+                    result_cards.extend([f"DBF:{dbf_id}"] * count)
+            
+            # 2. Sideboards (Zilliax modules, ETC Band)
+            sideboards = {}
+            for module_dbf, parent_dbf in sideboards_raw:
+                parent_id = DeckGenerator._dbf_map.get(parent_dbf, f"DBF:{parent_dbf}")
+                module_id = DeckGenerator._dbf_map.get(module_dbf, f"DBF:{module_dbf}")
+                
+                if parent_id not in sideboards:
+                    sideboards[parent_id] = []
+                sideboards[parent_id].append(module_id)
+                
+            return {
+                "cards": result_cards,
+                "sideboards": sideboards
+            }
         except Exception as e:
             print(f"Deck decoding error: {e}")
             return None
