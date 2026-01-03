@@ -53,10 +53,7 @@ class Trainer:
         """Main training loop."""
         start_iter = self.load_latest_checkpoint()
         
-        # Flush buffer if we are at a point where rules changed significantly
-        if start_iter >= 15:
-            print("Detected significant rule changes. Flushing biased ReplayBuffer...")
-            self.buffer.clear()
+        # We manually flushed once for Rule Update, no need to do it every time now.
             
         print(f"Starting training on {self.device} from iteration {start_iter + 1}...")
         
@@ -76,8 +73,8 @@ class Trainer:
             
             # 2. Training
             if len(self.buffer) < self.batch_size:
-                print("Buffer too small, skipping train...")
-                continue
+                print(f"Buffer too small ({len(self.buffer)}/{self.batch_size}), stopping to avoid empty iterations. Check for worker crashes.")
+                sys.exit(1)
                 
             self.model.to(self.device)
             self.model.train()
