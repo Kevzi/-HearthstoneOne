@@ -168,6 +168,11 @@ class AssistantWorker(QThread):
         
         attacker_pos = self.geometry.get_player_minion_pos(attacker_index, len(me.board))
         
+        # Debug
+        print(f"[DEBUG] Board size: {len(me.board)}, Attacker index: {attacker_index}")
+        print(f"[DEBUG] Attacker pos: ({attacker_pos.x}, {attacker_pos.y})")
+        print(f"[DEBUG] Target pos: ({target_pos.x}, {target_pos.y})")
+        
         # Get attacker name
         attacker_name = attacker.data.name if hasattr(attacker, 'data') and attacker.data else "Minion"
         
@@ -182,18 +187,30 @@ class AssistantWorker(QThread):
 def main():
     app = QApplication(sys.argv)
     
-    # 1. Overlay
+    # 1. Get screen resolution
+    screen = QApplication.primaryScreen()
+    if screen:
+        screen_geo = screen.geometry()
+        screen_width = screen_geo.width()
+        screen_height = screen_geo.height()
+    else:
+        screen_width = 1920
+        screen_height = 1080
+    
+    # 2. Overlay
     window = OverlayWindow()
     window.show()
     
-    # 2. Worker Thread
+    # 3. Worker Thread
     worker = AssistantWorker()
+    worker.geometry.resize(screen_width, screen_height)  # IMPORTANT: Use real screen resolution
     worker.status_signal.connect(window.update_info)
     worker.arrow_signal.connect(window.set_arrow)
     worker.highlight_signal.connect(window.set_highlight)
     worker.start()
     
     sys.exit(app.exec())
+
 
 if __name__ == "__main__":
     main()

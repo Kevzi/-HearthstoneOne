@@ -17,16 +17,16 @@ class HearthstoneGeometry:
         self.height = height
         
         # Geometry Constants (Relative 0.0-1.0)
-        # These are approximations based on typical HS layout
-        self.HAND_Y_PCT = 0.95
-        self.PLAYER_BOARD_Y_PCT = 0.55
-        self.OPPONENT_BOARD_Y_PCT = 0.42
-        self.OPPONENT_HERO_Y_PCT = 0.18
-        self.PLAYER_HERO_Y_PCT = 0.82
+        # Calibrated for 2560x1440 Hearthstone
+        self.HAND_Y_PCT = 0.95          # Cards in hand (very bottom)
+        self.PLAYER_BOARD_Y_PCT = 0.52  # Player's minions
+        self.OPPONENT_BOARD_Y_PCT = 0.35 # Opponent's minions
+        self.OPPONENT_HERO_Y_PCT = 0.09  # Opponent hero portrait
+        self.PLAYER_HERO_Y_PCT = 0.75    # Player hero portrait
         
         self.BOARD_CENTER_X_PCT = 0.5
         # Width of board area where minions sit
-        self.BOARD_WIDTH_PCT = 0.6 
+        self.BOARD_WIDTH_PCT = 0.55
         
     def resize(self, width: int, height: int):
         self.width = width
@@ -84,4 +84,4 @@ class HearthstoneGeometry:
         return self._to_pixels(0.5, y)
     
     def get_turn_button_pos(self) -> Point:
-        return self._to_pixels(0.82, 0.45) # Approx right middle
+        return self._to_pixels(0.85, 0.46)  # Right side, middle
