@@ -48,6 +48,7 @@
 - [ ] Visualisation du Replay Buffer
 
 ## Phase 7: Overlay & Live Game 🔜
-- [ ] `runtime/log_watcher.py` (Parser le Power.log du vrai jeu)
+- [x] `runtime/log_watcher.py` (Parser le Power.log du vrai jeu)
+- [ ] `runtime/parser.py` (Convertir Logs -> Simulator Actions)
 - [ ] `overlay/overlay_window.py` (Fenêtre transparente)
 - [ ] Intégration IA en temps réel (Inférence ONNX)
