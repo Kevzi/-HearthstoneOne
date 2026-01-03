@@ -18,9 +18,10 @@ class AssistantWorker(QThread):
     """Background worker that watches logs and updates the AI state."""
     
     # Signals to update GUI safely
-    status_signal = pyqtSignal(str)
-    arrow_signal = pyqtSignal(object, object)  # Point, Point
-    highlight_signal = pyqtSignal(object)  # Single Point for highlight circle
+    status_signal = pyqtSignal(str)   # Main action text
+    info_signal = pyqtSignal(str)     # Details/Confidence text
+    arrow_signal = pyqtSignal(object, object)
+    highlight_signal = pyqtSignal(object)
     
     def __init__(self, use_model: bool = True):
         super().__init__()
@@ -54,10 +55,17 @@ class AssistantWorker(QThread):
         
     def run(self):
         """Main loop in thread."""
-        self.status_signal.emit("Searching for Hearthstone logs...")
+        self.overlay = OverlayWindow()
         
-        # Start a refresh timer (calls think_and_suggest every 1 second)
-        from PyQt6.QtCore import QTimer
+        # Connect signals to new overlay methods
+        self.status_signal.connect(self.overlay.update_status)
+        self.info_signal.connect(self.overlay.update_info)
+        self.arrow_signal.connect(self.overlay.set_arrow)
+        self.highlight_signal.connect(self.overlay.set_highlight)
+        
+        self.overlay.show()
+        self.status_signal.emit("Searching...")
+        self.info_signal.emit("Hearthstone logs scanner active")
         self.refresh_timer = QTimer()
         self.refresh_timer.timeout.connect(self._refresh_suggestions)
         self.refresh_timer.start(1000)  # 1 second
@@ -104,8 +112,8 @@ class AssistantWorker(QThread):
                 break
         
         if not me:
-            total = sum(len(p.hand) for p in self.game.players)
-            self.status_signal.emit(f"Waiting... (Total cards: {total})")
+            self.status_signal.emit("STANDBY")
+            self.info_signal.emit("Waiting for cards...")
             return
 
         # === USE ALPHAZERO MODEL IF AVAILABLE ===
@@ -113,20 +121,18 @@ class AssistantWorker(QThread):
             self._suggest_with_brain(me)
             return
 
+        # === DUMMY AI FALLBACK ===
+        self.status_signal.emit("DUMMY AI")
+        
         # === PRIORITY 1: Playable Cards ===
         playable = [c for c in me.hand if hasattr(c, 'cost') and c.cost <= me.mana]
         
         if playable:
-            # DUMMY AI: Pick first playable card
             card_to_play = playable[0]
             card_name = card_to_play.data.name if hasattr(card_to_play, 'data') and card_to_play.data else card_to_play.card_id
             
-            # Check if card needs a target
-            needs_target = False
-            if hasattr(card_to_play, 'data') and card_to_play.data:
-                needs_target = getattr(card_to_play.data, 'targeted', False)
-            
-            self.status_signal.emit(f"Play: {card_name}")
+            self.status_signal.emit(f"PLAY: {card_name}")
+            self.info_signal.emit(f"Dummy AI suggests playing {card_name}")
             
             if needs_target:
                 hand_size = len(me.hand)
@@ -149,7 +155,8 @@ class AssistantWorker(QThread):
             
             if me.mana >= hp_cost and not hp_used:
                 hp_name = hp.data.name if hasattr(hp, 'data') and hp.data else "Hero Power"
-                self.status_signal.emit(f"Use: {hp_name}")
+                self.status_signal.emit(f"USE: {hp_name.upper()}")
+                self.info_signal.emit(f"Using Hero Power: {hp_name}")
                 hp_pos = self.geometry.get_hero_power_pos(is_opponent=False)
                 self.highlight_signal.emit(hp_pos)
                 return
@@ -162,7 +169,8 @@ class AssistantWorker(QThread):
         if usable_locations:
             loc = usable_locations[0]
             loc_name = loc.data.name if hasattr(loc, 'data') and loc.data else "Location"
-            self.status_signal.emit(f"Activate: {loc_name}")
+            self.status_signal.emit(f"ACTIVATE: {loc_name.upper()}")
+            self.info_signal.emit(f"Activating location: {loc_name}")
             
             # Locations are on the SAME board as minions, use real board index
             board_index = me.board.index(loc)
@@ -189,12 +197,14 @@ class AssistantWorker(QThread):
         action, confidence, description = self.brain.suggest_action(game_state)
         
         if action is None:
-            self.status_signal.emit(f"AI Error: {description}")
+            self.status_signal.emit("ERROR")
+            self.info_signal.emit(description)
             return
         
-        # Display confidence
+        # Display confidence and description
         conf_pct = int(confidence * 100)
-        self.status_signal.emit(f"[AI {conf_pct}%] {description}")
+        self.status_signal.emit(description)
+        self.info_signal.emit(f"AI Confidence: {conf_pct}% | Best Strategic Move")
         
         # Visualize the action
         if action.action_type == ActionType.END_TURN:
