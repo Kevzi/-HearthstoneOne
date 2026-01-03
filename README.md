@@ -9,72 +9,142 @@
 ---
 
 ## 🎯 Fonctionnalités
-# HearthstoneOne 🤖🃏
+# 🃏 HearthstoneOne: Advanced AI & Coaching Assistant
 
-**HearthstoneOne** est un projet ambitieux visant à créer une Intelligence Artificielle de niveau surhumain pour Hearthstone, capable non seulement de jouer parfaitement mais aussi de **coacher un humain en temps réel**.
+![Python](https://img.shields.io/badge/Python-3.10%2B-blue?style=for-the-badge&logo=python)
+![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-orange?style=for-the-badge&logo=pytorch)
+![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
-Contrairement aux bots classiques, il n'utilise pas de règles "If/Else" codées en dur, mais apprend par lui-même via un algorithme **AlphaZero (MCTS + Deep Learning)** sur un **Simulateur Universel Custom**.
+**HearthstoneOne** n'est pas un simple bot. C'est un ecosystème complet d'Intelligence Artificielle capable d'atteindre un niveau surhumain via l'apprentissage par renforcement (**AlphaZero**) et d'assister les joueurs en temps réel grâce à une compréhension profonde du jeu.
 
-## ✨ Fonctionnalités Actuelles
+---
 
-### 🧠 Core AI (AlphaZero)
-*   **Deep Neural Network** : Architecture Actor-Critic (Policy + Value Heads) traitant l'état du jeu vectorisé (690 dimensions).
-*   **MCTS (Monte Carlo Tree Search)** : Planification stratégique simulant des milliers de coups possibles.
-*   **Self-Play Loop** : L'IA joue contre elle-même pour générer ses propres données d'entraînement.
+## 🏗️ Architecture Système
 
-### 🎮 Simulateur Universel
-*   **Support Complet** : Gère toutes les extensions via `hearthstone_data`.
-*   **LLM-Powered** : Génération automatique des effets de cartes complexes (ex: *Zilliax*, *Rembobinage*).
-*   **Game State Cloning** : Clonage profond de l'état du jeu pour les simulations MCTS.
+HearthstoneOne agit comme une "paire d'yeux" augmentée par une IA. Voici comment les composants interagissent :
 
-### 👁️ Live Assistant (Work in Progress)
-*   **Log Watcher** : Lit le fichier `Power.log` de Hearthstone en temps réel.
-*   **Game State Reconstruction** : Reconstruit la partie en cours dans le simulateur.
-*   **Overlay** : (Bientôt) Affichage des probabilités de victoire et des meilleurs coups par-dessus le jeu.
+```mermaid
+graph TD
+    subgraph "Real World"
+        Player[👤 Human Player] -->|Plays| HS[Hearthstone Client]
+        HS -->|Writes| Log[📄 Power.log]
+    end
 
-## 🚀 Installation & Usage
+    subgraph "HearthstoneOne Engine"
+        Watcher[👀 Log Watcher] -->|Stream| Parser[⚙️ Parser]
+        Parser -->|Actions| Sim[🎮 Universal Simulator]
+        
+        Sim -->|Game State| Encoder[🔢 Feature Encoder]
+        Encoder -->|Tensor| Brain[🧠 AlphaZero Neural Net]
+        
+        Brain -->|Policy/Value| MCTS[🌲 Monte Carlo Tree Search]
+        MCTS -->|Best Move| Overlay[🖥️ Overlay UI]
+    end
 
-### Prérequis
-*   Python 3.10+
-*   Hearthstone (pour le mode Live)
-*   CUDA (recommandé pour l'entraînement)
+    Overlay -->|Visual Suggestions| Player
+    
+    style Brain fill:#f9f,stroke:#333,stroke-width:2px
+    style Sim fill:#bbf,stroke:#333,stroke-width:2px
+```
 
-### Installation
+---
+
+## 🧠 Le Cerveau : AlphaZero & MCTS
+
+Le cœur du projet repose sur une réimplémentation fidèle de l'algorithme d'AlphaZero de DeepMind, adapté à l'espace d'action immense de Hearthstone.
+
+### Cycle d'Apprentissage (Self-Play)
+
+L'IA apprend en jouant des millions de parties contre elle-même, sans connaissance humaine a priori (Tabula Rasa).
+
+```mermaid
+graph LR
+    SelfPlay[⚔️ Self-Play Games] -->|Trajectories| Buffer[💾 Replay Buffer]
+    Buffer -->|Mini-Batch| Trainer[🏋️ Training Loop]
+    Trainer -->|Backprop| Network[🧠 Neural Network]
+    Network -->|Inference| SelfPlay
+    
+    subgraph "Training Loop"
+    Trainer
+    Network
+    end
+```
+
+*   **Réseau de Neurones (Actor-Critic)** :
+    *   **Entrée** : État du plateau encodé en tenseur (Board, Main, Secrets, Historique).
+    *   **Sortie Politique ($P$)** : Probabilité de chaque coup possible.
+    *   **Sortie Valeur ($V$)** : Estimation de la probabilité de victoire (-1 à +1).
+
+*   **Monte Carlo Tree Search (MCTS)** : Utilise le réseau pour guider la recherche, explorant les futurs possibles (State Cloning) pour sélectionner le coup le plus robuste.
+
+---
+
+## 🎮 Le Simulateur Universel
+
+Pour entraîner une IA, il faut pouvoir simuler le jeu à une vitesse extrême. HearthstoneOne dispose de son propre moteur de règles, écrit en Python pur pour une flexibilité totale.
+
+### Points Forts
+*   **State Cloning** : Capacité unique de cloner l'état du jeu *parfaitement* à n'importe quel instant. Indispensable pour le MCTS.
+*   **LLM-Generated Logic** : Les milliers de cartes et leurs effets complexes (Battlecry, Deathrattle) sont générés semi-automatiquement par des Modèles de Langage, garantissant une couverture rapide des nouvelles extensions.
+*   **Factory Pattern** : Instanciation dynamique des cartes via `factory.py` pour supporter les cartes créées en cours de jeu (Discover, Add to hand).
+
+---
+
+## 👁️ Live Assistant & Parser
+
+Le module `runtime/` fait le pont entre le jeu réel et l'IA.
+
+1.  **LogWatcher** : Surveille `Power.log` en temps réel, détectant instantanément les nouvelles lignes.
+2.  **Parser Intelligent** :
+    *   Décode les tags cryptiques (`ZONE`, `DAMAGE`, `PLAYSTATE`).
+    *   Reconstruit la main de l'adversaire (comptage de cartes).
+    *   Détecte les offres de **Discover/Choose One** (`Zone.SETASIDE`) pour permettre à l'IA de conseiller le meilleur choix.
+
+---
+
+## 🚀 Guide de Démarrage
+
+### 1. Installation
 ```bash
 git clone https://github.com/Kevzi/-HearthstoneOne.git
 cd HearthstoneOne
 pip install -r requirements.txt
 ```
 
-### Entraîner l'IA
-Lancez la boucle d'auto-apprentissage :
+### 2. Lancer l'Assistant (Mode Live)
+Lancez Hearthstone, puis exécutez :
+```bash
+python runtime/test_log_reader.py
+```
+*Le script détectera automatiquement votre installation Hearthstone et commencera à décoder la partie.*
+
+### 3. Entraîner l'IA
+Pour lancer une session d'auto-apprentissage (Self-Play) :
 ```bash
 python training/trainer.py
 ```
 
-### Évaluer le Modèle
-Faites affronter votre meilleur modèle contre un bot aléatoire :
+### 4. Évaluation
+Testez la force de votre modèle actuel :
 ```bash
 python evaluation.py
 ```
 
-### Lancer le Live Watcher
-Pour voir le parser décoder vos actions en direct :
-```bash
-python runtime/test_log_reader.py
-```
+---
 
-## 📂 Structure du Projet
+## 📂 Organisation du Code
 
-*   `ai/` : Cerveau de l'IA (MCTS, Modèle, Encoder, ReplayBuffer).
-*   `simulator/` : Moteur de jeu (Game, Player, Card, Factory).
-*   `training/` : Scripts d'entraînement (DataCollector, Trainer).
-*   `runtime/` : Interface avec le jeu réel (LogWatcher, Parser).
-*   `gui/` : (WIP) Interface graphique.
-*   `models/` : Checkpoints des réseaux de neurones.
+| Dossier | Rôle | Composants Clés |
+| :--- | :--- | :--- |
+| `ai/` | Cerveau Artificiel | `mcts.py`, `model.py`, `encoder.py` |
+| `simulator/` | Moteur Physique | `game.py`, `player.py`, `factory.py` |
+| `training/` | Gym d'Entraînement | `trainer.py`, `data_collector.py` |
+| `runtime/` | Interface Jeu | `log_watcher.py`, `parser.py` |
+| `docs/` | Documentation | `TASKS.md`, `CHANGELOG.md` |
 
-## 🤝 Contribuer
-Les Pull Requests sont les bienvenues ! Consultez `docs/TASKS.md` pour voir la feuille de route.
+---
+
+*HearthstoneOne est un projet open-source conçu pour la recherche et l'éducation.*
 ├── training/              # ️ Entraînement
 │   └── self_play.py       # Boucle de jeu autonome
 ├── docs/                  #  Documentation
