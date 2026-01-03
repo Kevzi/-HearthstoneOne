@@ -20,6 +20,7 @@ class AssistantWorker(QThread):
     # Signals to update GUI safely
     status_signal = pyqtSignal(str)   # Main action text
     info_signal = pyqtSignal(str)     # Details/Confidence text
+    winrate_signal = pyqtSignal(float) # Value estimate -1 to 1
     arrow_signal = pyqtSignal(object, object)
     highlight_signal = pyqtSignal(object)
     
@@ -60,6 +61,7 @@ class AssistantWorker(QThread):
         # Connect signals to new overlay methods
         self.status_signal.connect(self.overlay.update_status)
         self.info_signal.connect(self.overlay.update_info)
+        self.winrate_signal.connect(self.overlay.update_winrate)
         self.arrow_signal.connect(self.overlay.set_arrow)
         self.highlight_signal.connect(self.overlay.set_highlight)
         
@@ -205,6 +207,10 @@ class AssistantWorker(QThread):
         conf_pct = int(confidence * 100)
         self.status_signal.emit(description)
         self.info_signal.emit(f"AI Confidence: {conf_pct}% | Best Strategic Move")
+        
+        # Get value estimate (winrate)
+        value = self.brain.get_value_estimate(game_state)
+        self.winrate_signal.emit(value)
         
         # Visualize the action
         if action.action_type == ActionType.END_TURN:

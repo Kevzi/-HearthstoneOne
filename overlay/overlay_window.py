@@ -72,9 +72,26 @@ class OverlayWindow(QMainWindow):
         self.info_label.setFont(QFont("Inter", 13))
         self.info_label.setStyleSheet("color: #cbd5e1; background: transparent; border: none;")
         
+        # Winrate Section
+        self.winrate_container = QWidget()
+        self.winrate_container.setStyleSheet("background: transparent; border: none;")
+        winrate_layout = QVBoxLayout(self.winrate_container)
+        winrate_layout.setContentsMargins(0, 5, 0, 0)
+        winrate_layout.setSpacing(5)
+        
+        self.winrate_text = QLabel("WIN CHANCE: 50%")
+        self.winrate_text.setFont(QFont("Outfit", 11, QFont.Weight.Bold))
+        self.winrate_text.setStyleSheet("color: #94a3b8; background: transparent; border: none;")
+        
+        # Progress Bar (Custom drawn)
+        self.win_prob = 0.5  # 0.0 to 1.0
+        
+        winrate_layout.addWidget(self.winrate_text)
+        
         panel_layout.addWidget(self.title_label)
         panel_layout.addWidget(self.status_label)
         panel_layout.addWidget(self.info_label)
+        panel_layout.addWidget(self.winrate_container)
         
         self.main_layout.addWidget(self.panel)
 
@@ -83,6 +100,21 @@ class OverlayWindow(QMainWindow):
         self.anim_tick = (self.anim_tick + 1) % 360
         self.update()
 
+    def update_winrate(self, value):
+        """Update winrate percentage (expects value -1 to 1)."""
+        # Convert -1..1 to 0..1
+        self.win_prob = (value + 1) / 2
+        pct = int(self.win_prob * 100)
+        self.winrate_text.setText(f"WIN CHANCE: {pct}%")
+        
+        # Update text color based on winrate
+        if pct > 60:
+            self.winrate_text.setStyleSheet("color: #4ade80;") # Greenish
+        elif pct < 40:
+            self.winrate_text.setStyleSheet("color: #f87171;") # Reddish
+        else:
+            self.winrate_text.setStyleSheet("color: #94a3b8;") # Neutral
+            
     def update_status(self, text):
         """Update the main suggestion text with a color check."""
         self.status_label.setText(text.upper())
@@ -112,6 +144,24 @@ class OverlayWindow(QMainWindow):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         
+        # --- DRAW WINRATE BAR IN PANEL ---
+        # Position the bar relative to the panel
+        # (Approximate positions since it's a layout, but we can draw over it)
+        bar_width = 360
+        bar_height = 4
+        bar_x = 50
+        bar_y = 195 # Adjusted to be below the winrate text in the panel
+        
+        # Background bar
+        painter.setBrush(QColor(30, 41, 59, 255))
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.drawRoundedRect(QRectF(bar_x, bar_y, bar_width, bar_height), 2, 2)
+        
+        # Foreground bar (win probability)
+        painter.setBrush(QColor(56, 189, 248, 255))
+        painter.drawRoundedRect(QRectF(bar_x, bar_y, bar_width * self.win_prob, bar_height), 2, 2)
+
+        # --- DRAW GAME ELEMENTS ---
         # Pulse factor (0.0 to 1.0)
         pulse = (math.sin(self.anim_tick * 0.1) + 1) / 2
         
