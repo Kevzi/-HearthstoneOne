@@ -10,11 +10,16 @@ class TrainingTab(QWidget):
         self.layout.setContentsMargins(20, 20, 20, 20)
         self.layout.setSpacing(20)
         
+        # History for plots
+        self.loss_history = []
+        self.wr_history = []
+        self.iterations = []
+        
         # 1. Stats Row
         stats_layout = QHBoxLayout()
-        self.card_iter = self.create_stat_card("ITERATION", "0 / 100")
-        self.card_winrate = self.create_stat_card("P2 WINRATE", "0.0 %")
-        self.card_loss = self.create_stat_card("AVG LOSS", "0.000")
+        self.card_iter = self.create_stat_card("ITÉRATION", "0 / 100")
+        self.card_winrate = self.create_stat_card("WINRATE P2 (%)", "0.0 %")
+        self.card_loss = self.create_stat_card("PERTE (LOSS)", "0.000")
         
         stats_layout.addWidget(self.card_iter)
         stats_layout.addWidget(self.card_winrate)
@@ -61,18 +66,18 @@ class TrainingTab(QWidget):
         cc_layout = QVBoxLayout(control_card)
         
         top_cc = QHBoxLayout()
-        top_cc.addWidget(QLabel("Self-Play Data Collection"))
+        top_cc.addWidget(QLabel("Collecte de Données (Self-Play)"))
         self.progress = QProgressBar()
         self.progress.setValue(0)
         top_cc.addWidget(self.progress)
         cc_layout.addLayout(top_cc)
         
         bot_cc = QHBoxLayout()
-        self.btn_start = QPushButton("START ENGINE")
+        self.btn_start = QPushButton("DÉMARRER LE MOTEUR")
         self.btn_start.setObjectName("start_btn")
         self.btn_start.setFixedHeight(45)
         
-        self.btn_stop = QPushButton("STOP ENGINE")
+        self.btn_stop = QPushButton("ARRÊTER")
         self.btn_stop.setObjectName("stop_btn")
         self.btn_stop.setFixedHeight(45)
         self.btn_stop.setEnabled(False)
@@ -82,6 +87,32 @@ class TrainingTab(QWidget):
         cc_layout.addLayout(bot_cc)
         
         self.layout.addWidget(control_card)
+
+    def update_data(self, stats):
+        """Update the UI with real training statistics."""
+        iteration = stats.get("iteration", 0)
+        winners = stats.get("winners", {})
+        loss = stats.get("avg_loss", 0.0)
+        
+        # Calculate winrate for P2
+        total_games = sum(winners.values())
+        wr_p2 = (winners.get(2, 0) / total_games * 100) if total_games > 0 else 0
+        
+        # Update Cards
+        self.card_iter.value_label.setText(f"{iteration} / 100")
+        self.card_winrate.value_label.setText(f"{wr_p2:.1f} %")
+        self.card_loss.value_label.setText(f"{loss:.3f}")
+        
+        # Update Plots
+        self.iterations.append(iteration)
+        self.loss_history.append(loss)
+        self.wr_history.append(wr_p2)
+        
+        self.loss_curve.setData(self.iterations, self.loss_history)
+        self.wr_curve.setData(self.iterations, self.wr_history)
+        
+        # Progress Bar logic (Simplified for now)
+        self.progress.setValue(100)
 
     def create_stat_card(self, title, value):
         card = QFrame()

@@ -14,10 +14,12 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from ai.model import HearthstoneModel
 from gui.tabs.training_tab import TrainingTab
 from gui.tabs.spy_tab import SpyTab
+from gui.tabs.decks_tab import DecksTab
 from training.trainer import Trainer
 
 class TrainingThread(QThread):
     log_signal = pyqtSignal(str)
+    stats_signal = pyqtSignal(dict)
     
     def run(self):
         # Redirect stdout
@@ -34,9 +36,12 @@ class TrainingThread(QThread):
         original_stdout = sys.stdout
         sys.stdout = Logger(self.log_signal)
         
+        def iter_cb(stats):
+            self.stats_signal.emit(stats)
+            
         try:
             trainer = Trainer()
-            trainer.train()
+            trainer.train(iteration_callback=iter_cb)
         except Exception as e:
             self.log_signal.emit(f"ERROR: {e}")
         finally:
@@ -97,6 +102,7 @@ class MainWindow(QMainWindow):
         # Connections
         self.training_thread = TrainingThread()
         self.training_thread.log_signal.connect(self.append_log)
+        self.training_thread.stats_signal.connect(self.update_stats)
         self.training_page.btn_start.clicked.connect(self.start_training)
         
         # Default Page
@@ -104,6 +110,9 @@ class MainWindow(QMainWindow):
 
     def append_log(self, text):
         self.console.append(text)
+
+    def update_stats(self, stats):
+        self.training_page.update_data(stats)
 
     def start_training(self):
         self.status_label.setText("● ENTRAÎNEMENT ACTIF")
@@ -126,11 +135,11 @@ class MainWindow(QMainWindow):
         self.sidebar_layout.setSpacing(5)
         
         # Buttons
-        self.btn_train = SideBarButton("fa.rocket", "Entraînement")
-        self.btn_spy = SideBarButton("fa.eye", "Mode Espion")
-        self.btn_decks = SideBarButton("fa.book", "Meta Decks")
-        self.btn_stats = SideBarButton("fa.line-chart", "Analyses")
-        self.btn_settings = SideBarButton("fa.cog", "Réglages")
+        self.btn_train = SideBarButton("fa5s.rocket", "Entraînement")
+        self.btn_spy = SideBarButton("fa5s.eye", "Mode Espion")
+        self.btn_decks = SideBarButton("fa5s.book", "Meta Decks")
+        self.btn_stats = SideBarButton("fa5s.chart-line", "Analyses")
+        self.btn_settings = SideBarButton("fa5s.cog", "Réglages")
         
         self.btn_train.clicked.connect(lambda: self.switch_page(0))
         self.btn_spy.clicked.connect(lambda: self.switch_page(1))
@@ -176,8 +185,12 @@ class MainWindow(QMainWindow):
         self.spy_page = SpyTab()
         self.pages.addWidget(self.spy_page)
         
+        # 2. Decks Page
+        self.decks_page = DecksTab()
+        self.pages.addWidget(self.decks_page)
+        
         # Others (Placeholders)
-        for name in ["Meta Decks", "Analytics", "Settings"]:
+        for name in ["Analyses", "Réglages"]:
             page = QWidget()
             layout = QVBoxLayout(page)
             title = QLabel(f"{name} Control Center")

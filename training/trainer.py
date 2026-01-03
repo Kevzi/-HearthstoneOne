@@ -49,7 +49,7 @@ class Trainer:
         self.writer = SummaryWriter(log_dir="runs/hearthstone_training")
         print(f"TensorBoard: tensorboard --logdir=runs")
         
-    def train(self):
+    def train(self, iteration_callback=None):
         """Main training loop."""
         start_iter = self.load_latest_checkpoint()
         
@@ -86,6 +86,15 @@ class Trainer:
             # 3. Checkpoint
             self.save_checkpoint(f"checkpoint_iter_{iteration+1}.pt")
             self.writer.flush()
+
+            if iteration_callback:
+                stats = {
+                    "iteration": iteration + 1,
+                    "winners": winners,
+                    "avg_loss": avg_loss,
+                    "buffer_size": len(self.buffer)
+                }
+                iteration_callback(stats)
             
     def _train_epochs(self, iteration: int):
         """Train on buffer data for several epochs."""

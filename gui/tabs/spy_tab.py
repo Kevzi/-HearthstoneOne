@@ -25,7 +25,7 @@ class SpyTab(QWidget):
         self.btn_toggle = QPushButton("DÉMARRER L'ASSISTANT")
         self.btn_toggle.setObjectName("start_btn")
         self.btn_toggle.setFixedHeight(60)
-        self.btn_toggle.setIcon(qta.icon("fa.play-circle", color="white"))
+        self.btn_toggle.setIcon(qta.icon("fa5s.play-circle", color="white"))
         master_layout.addWidget(self.btn_toggle)
         
         self.layout.addWidget(master_card)
