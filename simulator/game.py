@@ -212,6 +212,13 @@ class Game:
             
         choice = options[choice_idx]
         callback = self.pending_choices["callback"]
+        
+        # === DARK GIFT: Apply random bonus to discovered minions ===
+        source = self.pending_choices.get("source")
+        if source and hasattr(source, 'data') and source.data.dark_gift:
+            if choice.card_type == CardType.MINION:
+                self._apply_dark_gift(choice)
+        
         self.pending_choices = None  # Clear before callback to avoid loops
         
         callback(self, choice)
@@ -220,6 +227,28 @@ class Game:
         self.process_deaths()
         self.check_for_game_over()
         return True
+    
+    def _apply_dark_gift(self, minion: Card) -> None:
+        """Apply a random Dark Gift bonus to a minion."""
+        import random
+        
+        gifts = [
+            lambda m: setattr(m, '_attack', m._attack + 2),  # +2 Attack
+            lambda m: setattr(m, '_health', m._health + 2),  # +2 Health
+            lambda m: setattr(m, '_taunt', True),            # Taunt
+            lambda m: setattr(m, '_divine_shield', True),    # Divine Shield
+            lambda m: setattr(m, '_rush', True),             # Rush
+            lambda m: setattr(m, '_lifesteal', True),        # Lifesteal
+            lambda m: setattr(m, '_stealth', True),          # Stealth
+            lambda m: setattr(m, '_cost', max(0, m._cost - 1)),  # Cost -1
+        ]
+        
+        # Apply 1-2 random gifts
+        num_gifts = random.randint(1, 2)
+        for _ in range(num_gifts):
+            gift = random.choice(gifts)
+            gift(minion)
+
     def register_trigger(self, event_name: str, source: Entity, callback: Callable) -> None:
         """Register a trigger callback."""
         if event_name in self._triggers:

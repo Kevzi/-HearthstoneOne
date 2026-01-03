@@ -304,6 +304,10 @@ class CardDatabase:
             choose_one='CHOOSE_ONE' in mechanics,
             excavate='EXCAVATE' in mechanics,
             elusive='CANT_BE_TARGETED_BY_SPELLS' in mechanics or 'can\'t be targeted' in text.lower(),
+            # Latest expansion mechanics
+            dark_gift='DARK_GIFT' in mechanics or '<b>Dark Gift</b>' in text,
+            tourist='TOURIST' in mechanics,
+            drink='three times' in text.lower() or 'Drink.' in text,
             # Synergies
             elemental_synergy='If you played an Elemental last turn' in text,
             dragon_synergy='holding a Dragon' in text or 'If you\'re holding a Dragon' in text,

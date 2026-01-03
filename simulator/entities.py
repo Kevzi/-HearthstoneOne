@@ -92,6 +92,13 @@ class CardData:
     elusive: bool = False           # Can't be targeted by spells/powers
     counter: bool = False           # Card is countered (no effect)
     
+    # Latest expansion mechanics
+    dark_gift: bool = False         # Apply bonus to Discovered minions (Emerald Dream)
+    tourist: bool = False           # Allows including cards from another class (Perils)
+    tourist_class: str = ""         # Which class this tourist allows
+    drink: bool = False             # Spell with 3 uses (Perils)
+    drink_uses: int = 3             # Remaining uses for drink
+    
     # Synergy trackers
     elemental_synergy: bool = False  # If played elemental last turn (Ungoro)
     dragon_synergy: bool = False     # If holding a dragon (BRM)
