@@ -85,7 +85,7 @@ class DataCollector:
              # This is a bit aggressive but necessary for early training health
              pass 
 
-        print(f"Starting parallel collection of {num_games} games (Mirror Matches enforced)...")
+        print(f"Starting parallel collection of {num_games} games (Mixed Matches enabled)...")
         
         start_time = time.time()
         winners = {0: 0, 1: 0, 2: 0}

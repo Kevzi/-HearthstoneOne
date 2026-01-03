@@ -88,11 +88,11 @@ class HearthstoneGame:
         """
         import random as rnd
         
-        # Use META DECKS for training (competitive decks from HSGuru)
+        # Use META DECKS for training (competitive decks)
         if deck1 is None and deck2 is None:
-            # Force MIRROR MATCH for better training balance
+            # Random meta deck for each player (Mixed Matches)
             class1, deck1_ids = DeckGenerator.get_random_meta_deck()
-            class2, deck2_ids = class1, deck1_ids.copy()
+            class2, deck2_ids = DeckGenerator.get_random_meta_deck()
         else:
             if deck1 is None:
                 class1, deck1_ids = DeckGenerator.get_random_meta_deck()
