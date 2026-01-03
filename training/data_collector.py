@@ -42,7 +42,11 @@ def _play_game_worker(model_state, input_dim, action_dim, mcts_sims, game_idx, v
         trajectory.append((encoded_state, mcts_probs, p_id))
         
         # Pick action
-        action_idx = np.random.choice(len(mcts_probs), p=mcts_probs)
+        # Epsilon-greedy for P2 to break the bias
+        if p_id == 2 and np.random.random() < 0.2:
+            action_idx = np.random.choice(len(mcts_probs))
+        else:
+            action_idx = np.random.choice(len(mcts_probs), p=mcts_probs)
         
         # Execute action
         action = Action.from_index(action_idx)
