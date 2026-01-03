@@ -69,3 +69,7 @@ class ReplayBuffer:
     
     def __len__(self) -> int:
         return len(self.buffer)
+        
+    def clear(self):
+        """Clear the buffer."""
+        self.buffer.clear()

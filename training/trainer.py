@@ -53,6 +53,11 @@ class Trainer:
         """Main training loop."""
         start_iter = self.load_latest_checkpoint()
         
+        # Flush buffer if we are at a point where rules changed significantly
+        if start_iter >= 15:
+            print("Detected significant rule changes. Flushing biased ReplayBuffer...")
+            self.buffer.clear()
+            
         print(f"Starting training on {self.device} from iteration {start_iter + 1}...")
         
         for iteration in range(start_iter, self.num_iterations):
