@@ -16,11 +16,25 @@ from .actions import Action, ActionType, ACTION_SPACE_SIZE
 from .card import CardInstance
 
 from simulator import Game, Player, CardDatabase, create_card, Hero, CardType, CardData
+from simulator.deck_generator import DeckGenerator
 
+# All playable classes for training variety
+ALL_CLASSES = ["MAGE", "WARRIOR", "HUNTER", "PALADIN", "ROGUE", "PRIEST", "SHAMAN", "WARLOCK", "DRUID", "DEMONHUNTER", "DEATHKNIGHT"]
 
-# Default decks for testing
-BASIC_MAGE_DECK = ["CS2_023", "CS2_024", "CS2_025", "CS2_027", "CS2_029", "CS2_032", "CS2_182"] * 5
-BASIC_WARRIOR_DECK = ["CS2_103", "CS2_105", "CS2_106", "CS2_108", "CS2_182", "CS2_186", "CS2_200"] * 5
+# Hero IDs per class
+HERO_IDS = {
+    "MAGE": "HERO_08",
+    "WARRIOR": "HERO_01", 
+    "HUNTER": "HERO_05",
+    "PALADIN": "HERO_04",
+    "ROGUE": "HERO_03",
+    "PRIEST": "HERO_09",
+    "SHAMAN": "HERO_02",
+    "WARLOCK": "HERO_07",
+    "DRUID": "HERO_06",
+    "DEMONHUNTER": "HERO_10",
+    "DEATHKNIGHT": "HERO_11",
+}
 
 
 class HearthstoneGame:
@@ -63,19 +77,44 @@ class HearthstoneGame:
         self,
         deck1: Optional[List[str]] = None,
         deck2: Optional[List[str]] = None,
-        hero1: str = "HERO_08",
-        hero2: str = "HERO_01",
+        class1: Optional[str] = None,
+        class2: Optional[str] = None,
         randomize_first: bool = True,
     ) -> GameState:
-        deck1_ids = deck1 or BASIC_MAGE_DECK
-        deck2_ids = deck2 or BASIC_WARRIOR_DECK
+        """
+        Reset the game with new decks.
+        
+        If no decks provided, generates random 30-card decks for random classes.
+        """
+        import random as rnd
+        
+        # Pick random classes if not specified
+        if class1 is None:
+            class1 = rnd.choice(ALL_CLASSES)
+        if class2 is None:
+            class2 = rnd.choice(ALL_CLASSES)
+        
+        # Generate decks if not provided (30 cards each)
+        if deck1 is None:
+            deck1_ids = DeckGenerator.get_random_deck(class1, size=30)
+        else:
+            deck1_ids = deck1
+            
+        if deck2 is None:
+            deck2_ids = DeckGenerator.get_random_deck(class2, size=30)
+        else:
+            deck2_ids = deck2
+        
+        # Get hero IDs for the classes
+        hero1 = HERO_IDS.get(class1, "HERO_08")
+        hero2 = HERO_IDS.get(class2, "HERO_01")
         
         p1 = Player("Player1")
         p2 = Player("Player2")
         
-        # Setup heroes (placeholder for now, should link to actual hero cards)
-        h1_data = CardDatabase.get_card(hero1) or CardData(hero1, "Mage", card_type=CardType.HERO)
-        h2_data = CardDatabase.get_card(hero2) or CardData(hero2, "Warrior", card_type=CardType.HERO)
+        # Setup heroes
+        h1_data = CardDatabase.get_card(hero1) or CardData(hero1, class1, card_type=CardType.HERO)
+        h2_data = CardDatabase.get_card(hero2) or CardData(hero2, class2, card_type=CardType.HERO)
         p1.hero = Hero(h1_data)
         p2.hero = Hero(h2_data)
         p1.hero.controller = p1
@@ -84,9 +123,11 @@ class HearthstoneGame:
         self._game = Game()
         self._game.setup(p1, p2)
         
-        # Add decks
-        for cid in deck1_ids: p1.add_to_deck(create_card(cid, self._game))
-        for cid in deck2_ids: p2.add_to_deck(create_card(cid, self._game))
+        # Add decks (30 cards each)
+        for cid in deck1_ids: 
+            p1.add_to_deck(create_card(cid, self._game))
+        for cid in deck2_ids: 
+            p2.add_to_deck(create_card(cid, self._game))
         
         p1.shuffle_deck()
         p2.shuffle_deck()
