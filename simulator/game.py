@@ -1048,6 +1048,13 @@ class Game:
         """Equip a weapon."""
         weapon = card if isinstance(card, Weapon) else Weapon(card.data, self)
         self.current_player.equip_weapon(weapon)
+        
+        # Trigger on_equip
+        handler = self._get_effect_handler(weapon.card_id, "on_equip")
+        if handler:
+            handler(self, self.current_player, weapon)
+            
+        self.fire_event("on_weapon_equipped", weapon)
         return True
     
     def _play_hero(self, card: Card) -> bool:
@@ -1130,6 +1137,10 @@ class Game:
         # Defender hits back (unless attacking a hero with a weapon)
         if defender.card_type != CardType.HERO or not isinstance(attacker, Hero):
             self.deal_damage(attacker, defender_damage, defender)
+            
+        # === AFTER ATTACK: Trigger hero attack effects ===
+        if isinstance(attacker, Hero):
+            self.fire_event("on_hero_attack", attacker)
         
         # Weapon loses durability
         if isinstance(attacker, Hero) and attacker.weapon:
