@@ -48,8 +48,10 @@ def _play_game_worker(model_state, input_dim, action_dim, mcts_sims, game_idx, v
         action = Action.from_index(action_idx)
         try:
             env.step(action)
-        except:
-            pass
+        except Exception as e:
+            if verbose:
+                print(f"Worker Error in game {game_idx}: {e}")
+            break # Stop game on error
             
         step_count += 1
         

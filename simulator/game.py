@@ -294,7 +294,8 @@ class Game:
             name="The Coin",
             text="Gain 1 Mana Crystal this turn only.",
             cost=0,
-            card_type=CardType.SPELL
+            card_type=CardType.SPELL,
+            card_set="CORE"
         )
         coin = Spell(coin_data, self)
         self.players[1].add_to_hand(coin)
