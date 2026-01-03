@@ -177,6 +177,26 @@ class Card(Entity):
         return self.data.card_type
     
     @property
+    def card_set(self) -> str:
+        return self.data.card_set
+        
+    @property
+    def race(self) -> Race:
+        return self.data.race
+        
+    @property
+    def rarity(self) -> Rarity:
+        return self.data.rarity
+        
+    @property
+    def card_class(self) -> CardClass:
+        return self.data.card_class
+        
+    @property
+    def spell_school(self) -> SpellSchool:
+        return self.data.spell_school
+    
+    @property
     def cost(self) -> int:
         return max(0, self._cost)
     
