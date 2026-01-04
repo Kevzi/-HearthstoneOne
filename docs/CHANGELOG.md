@@ -4,6 +4,26 @@ All notable changes to the HearthstoneOne project.
 
 ---
 
+## [2026-01-04] — Fairness & Turbo Performance
+
+### ✨ Added
+- **Turbo Configuration** — Added support for `training_config.json` to optimize workers (up to 15) and MCTS simulations for high-end CPUs (AMD Ryzen 5800X).
+- **Persistent Analytics** — Training statistics (Loss, Winrate, Buffer) are now saved to `training_history.json`, ensuring dashboard data survives restarts.
+- **Plot Enhancements** — Added markers to analytics graphs for visibility even with a single data point.
+- **Reset Utility** — Created `tools/reset_training.py` to quickly clear models and history for fresh starts.
+
+### 🔧 Changed
+- **Balanced Self-Play** — Random perspective assignment in `data_collector.py` (AI can be P1 or P2) and confirmed "The Coin" (`GAME_005`) logic for P2.
+- **Effect Package Scoping** — Fixed `EffectCache` to correctly set `__package__`, allowing relative imports within card effects.
+
+### 🧪 Fixed
+- **Double Draw Bug** — Resolved issue where players drew 2 cards instead of 1 at the start of their turn.
+- **Multiprocessing NameErrors** — Fixed worker crashes caused by undefined `hero1`/`hero2` in `reset()` and missing `encoder` instance.
+- **Maze Guide Import** — Fixed `ModuleNotFoundError` in `REV_308` by removing invalid `simulator.rng` dependency and streamlining the effect.
+- **CSS Lints** — Corrected multiple syntax and property errors in `gui/style.css`.
+
+---
+
 ## [2026-01-03] — Training Pipeline Stability & Sideboard Fix
 
 ### ✨ Added

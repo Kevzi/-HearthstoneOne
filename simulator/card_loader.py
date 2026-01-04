@@ -27,6 +27,10 @@ class CardDatabase:
             cls._instance = super().__new__(cls)
         return cls._instance
     
+    @property
+    def is_loaded(self) -> bool:
+        return self._loaded
+
     @classmethod
     def get_instance(cls) -> CardDatabase:
         """Get the singleton instance."""
@@ -140,8 +144,9 @@ class CardDatabase:
         if c_type == CardType.INVALID: return None
         
         # ID
-        card_id = data.get('id', '')
+        card_id = data.get('id') or data.get('dbfId') # Fallback to dbfId if strictly needed
         if not card_id: return None
+        card_id = str(card_id)
         
         # Class mapping
         class_str = data.get('cardClass', 'NEUTRAL')

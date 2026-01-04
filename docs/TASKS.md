@@ -1,6 +1,6 @@
 # 📋 HearthstoneOne — Roadmap
 
-> Last updated: 2026-01-03
+> Last updated: 2026-01-04
 
 ---
 
@@ -147,8 +147,8 @@
 | **🎸 E.T.C. Band Manager** | ⏳ | Parse/specify 3 band cards, implement Discover |
 | **🔮 Discover UI** | ⏳ | AI chooses between 3 cards (not random) |
 | **🎯 Hero Power Targeting** | ⏳ | Smart targeting for targeted hero powers |
-| **📊 Analytics Page** | ⏳ | Real-time graphs (Loss, Winrate, Stats by deck) |
-| **⚙️ Settings Page** | ⏳ | Configure training params, paths, etc. |
+| **📊 Analytics Page** | ✅ | Real-time graphs with persistent history |
+| **⚙️ Settings Page** | ✅ | Configure training params (Workers, MCTS, Batch) |
 
 ---
 

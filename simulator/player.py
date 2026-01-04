@@ -401,9 +401,6 @@ class Player(Entity):
         self.spells_played_this_turn = 0
         self.hero_power_uses_this_turn = 0
         self.combo_cards_played = 0
-        
-        # Draw a card
-        self.draw(1)
     
     def end_turn(self) -> None:
         """Called at the end of player's turn."""

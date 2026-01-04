@@ -22,14 +22,26 @@ def _play_game_worker(model_state, input_dim, action_dim, mcts_sims, game_idx, v
         # Crucial for Windows: limit torch threads per process to save RAM
         torch.set_num_threads(1)
         
-        # Each process needs its own model instance on CPU
+        # Load card database ONCE per worker process
+        from simulator import CardDatabase
+        db = CardDatabase.get_instance()
+        if not db.is_loaded:
+            import contextlib
+            import io
+            with contextlib.redirect_stdout(io.StringIO()):
+                db.load()
+        
+        # Each process needs its own model and encoder instance
         model = HearthstoneModel(input_dim, action_dim)
         model.load_state_dict(model_state)
         model.eval()
-        
         encoder = FeatureEncoder()
-        env = HearthstoneGame()
-        env.reset(randomize_first=True)
+        
+        # Randomize perspective: sometimes the AI is Player 1, sometimes Player 2
+        perspective = 1 if np.random.random() > 0.5 else 2
+        
+        env = HearthstoneGame(perspective=perspective)
+        env.reset()
         
         trajectory = []
         step_count = 0
@@ -41,16 +53,14 @@ def _play_game_worker(model_state, input_dim, action_dim, mcts_sims, game_idx, v
             mcts_probs = mcts.search(root_game_state)
             
             encoded_state = encoder.encode(env.get_state())
-            p_id = 1 if env.current_player == env.game.players[0] else 2
+            # Current player ID in the simulator (1 or 2)
+            current_p_id = 1 if env.current_player == env.game.players[0] else 2
             
-            trajectory.append((encoded_state, mcts_probs, p_id))
+            # Store transition (State, Probs, CurrentPlayerID)
+            trajectory.append((encoded_state, mcts_probs, current_p_id))
             
-            # Pick action
-            # Epsilon-greedy for P2 to break the bias
-            if p_id == 2 and np.random.random() < 0.2:
-                action_idx = np.random.choice(len(mcts_probs))
-            else:
-                action_idx = np.random.choice(len(mcts_probs), p=mcts_probs)
+            # Pick action using MCTS probabilities (Symmetric)
+            action_idx = np.random.choice(len(mcts_probs), p=mcts_probs)
             
             # Execute action
             action = Action.from_index(action_idx)
@@ -80,13 +90,14 @@ class DataCollector:
     def collect_games(self, num_games: int, mcts_sims: int = 25, verbose: bool = False):
         """Run self-play games using multiprocessing."""
         
-        # Security check: if buffer is full of P1 wins, clear it to force new learning
-        # (Only if buffer is already significant)
-        if len(self.buffer) > 1000:
-             # This is a bit aggressive but necessary for early training health
-             pass 
+        # CRITICAL FIX: Buffer was poisoned by biased P1-only games and P2 random moves.
+        # Clearing once to ensure new training is healthy.
+        if len(self.buffer) > 0 and not hasattr(self, '_buffer_flushed'):
+            print("Cleaning biased replay buffer to restart with healthy symmetric data (P1/P2 random perspective)...")
+            self.buffer.clear()
+            self._buffer_flushed = True
 
-        print(f"Starting parallel collection of {num_games} games (Mixed Matches enabled)...")
+        print(f"Starting parallel selection of {num_games} games...")
         
         start_time = time.time()
         winners = {0: 0, 1: 0, 2: 0}

@@ -128,8 +128,31 @@ class Trainer:
                     "avg_loss": avg_loss,
                     "buffer_size": len(self.buffer)
                 }
+                # Save to history file for persistence
+                self.save_history(stats)
                 iteration_callback(stats)
             
+    def save_history(self, stats):
+        """Append stats to training_history.json."""
+        import json
+        history_path = "training_history.json"
+        history = []
+        if os.path.exists(history_path):
+            try:
+                with open(history_path, 'r') as f:
+                    history = json.load(f)
+            except:
+                history = []
+        
+        # Avoid duplicate iterations if resuming
+        history = [h for h in history if h.get("iteration") != stats["iteration"]]
+        history.append(stats)
+        # Sort by iteration
+        history.sort(key=lambda x: x.get("iteration", 0))
+        
+        with open(history_path, 'w') as f:
+            json.dump(history, f, indent=4)
+        
     def _train_epochs(self, iteration: int):
         """Train on buffer data for several epochs."""
         total_loss = 0

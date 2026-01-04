@@ -1,148 +1,102 @@
-/* HearthstoneOne Premium Dashboard Styles */
+/* DeepMana Premium Design System - Ultimate Edition */
 
 QMainWindow {
-    background: qradialgradient(cx:0.5, cy:0.5, radius: 1,
-            fx:0.5, fy:0.5,
-            stop:0 #1e293b, stop:1 #020617);
+    background-color: #020617;
+    /* Fond quasi noir profond */
 }
 
-/* Custom Scrollbars */
-QScrollBar:vertical {
-    border: none;
-    background: #0f172a;
-    width: 8px;
-    margin: 0px 0px 0px 0px;
-}
-
-QScrollBar::handle:vertical {
-    background: #475569;
-    min-height: 20px;
-    border-radius: 4px;
-}
-
-QScrollBar::add-line:vertical,
-QScrollBar::sub-line:vertical {
-    height: 0px;
-}
-
-QScrollBar::add-page:vertical,
-QScrollBar::sub-page:vertical {
-    background: none;
-}
-
-/* Sidebar Styling */
+/* Sidebar - Plus étroite et élégante */
 #sidebar {
-    background-color: #1e293b;
-    /* Slate 800 */
-    border-right: 1px solid #334155;
+    background-color: #030712;
+    border-right: 1px solid #1e293b;
     min-width: 220px;
 }
 
 #sidebar QPushButton {
+    color: #94a3b8;
     background-color: transparent;
     border: none;
-    color: #94a3b8;
-    text-align: left;
     padding: 12px 20px;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 500;
     border-radius: 8px;
-    margin: 4px 10px;
+    margin: 4px 12px;
 }
 
 #sidebar QPushButton:hover {
-    background-color: #334155;
-    color: #f1f5f9;
+    color: #f8fafc;
+    background-color: #0f172a;
 }
 
 #sidebar QPushButton[active="true"] {
-    background-color: #3b82f6;
-    /* Blue 500 */
+    color: #3b82f6;
+    background-color: rgba(59, 130, 246, 0.1);
+    font-weight: bold;
+}
+
+/* Dashboard Card - Style "Glass-Titanium" */
+#dash_card {
+    background-color: #0f172a;
+    border: 1px solid #1e293b;
+    border-radius: 16px;
+}
+
+/* Statistiques - Typographie plus fine */
+.stat-value {
+    color: #ffffff;
+    font-size: 28px;
+    font-weight: 300;
+    /* Plus léger pour un look premium */
+    letter-spacing: -1px;
+}
+
+.stat-label {
+    color: #64748b;
+    font-size: 10px;
+    font-weight: bold;
+}
+
+/* Boutons d'Action */
+#neural-btn {
+    background-color: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #3b82f6, stop:1 #2563eb);
     color: white;
-}
-
-/* Header */
-#header {
-    background-color: rgba(30, 41, 59, 0.7);
-    border-bottom: 1px solid #334155;
-    padding: 10px 20px;
-}
-
-#logo_label {
-    color: white;
-    font-size: 20px;
-    font-weight: 800;
-    font-family: 'Outfit', sans-serif;
-}
-
-/* Cards & Content */
-.card {
-    background-color: #1e293b;
+    font-weight: bold;
+    font-size: 13px;
     border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#neural-btn:hover {
+    background: #4f46e5;
+}
+
+#stop-btn {
+    background-color: transparent;
+    color: #94a3b8;
     border: 1px solid #334155;
-    padding: 20px;
+    border-radius: 12px;
+    font-size: 12px;
 }
 
-.card:hover {
-    border: 1px solid #3b82f6;
-    background-color: #1e293b;
-    /* Keeping it solid for readability */
+#stop-btn:hover {
+    color: #ef4444;
+    border-color: #ef4444;
+    background-color: rgba(239, 68, 68, 0.05);
 }
 
-/* Terminal / Console */
+/* Console - Plus discrète en bas */
 #console {
     background-color: #020617;
-    color: #94a3b8;
-    font-family: 'Consolas', 'Courier New', monospace;
-    font-size: 12px;
-    border-top: 2px solid #1e293b;
+    color: #475569;
+    font-family: "JetBrains Mono", "Cascadia Code", "Consolas";
+    font-size: 11px;
+    border-top: 1px solid #1e293b;
     padding: 10px;
 }
 
-QLabel {
-    color: #e2e8f0;
-}
-
-#title_label {
-    font-size: 24px;
-    font-weight: 700;
+/* Titres */
+#main_title {
     color: white;
-    margin-bottom: 10px;
-}
-
-/* Action Buttons */
-#start_btn {
-    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #10b981, stop:1 #059669);
-    color: white;
-    font-weight: 700;
-    border-radius: 8px;
-    padding: 10px 20px;
-    border: none;
-}
-
-#start_btn:hover {
-    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #34d399, stop:1 #10b981);
-}
-
-#stop_btn {
-    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #ef4444, stop:1 #b91c1c);
-    color: white;
-    font-weight: 700;
-    border-radius: 8px;
-    padding: 10px 20px;
-    border: none;
-}
-
-/* Progress Bar */
-QProgressBar {
-    border: 1px solid #334155;
-    border-radius: 5px;
-    text-align: center;
-    background-color: #0f172a;
-    color: white;
-}
-
-QProgressBar::chunk {
-    background-color: #3b82f6;
-    border-radius: 4px;
+    font-size: 32px;
+    font-weight: 800;
 }

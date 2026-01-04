@@ -117,20 +117,50 @@ class HearthstoneGame:
             # print(f"Warning: Deck 2 ({class2}) has only {len(deck2_ids)} cards. Using Random Basic Deck instead.")
             deck2_ids = DeckGenerator.get_random_deck(class2)
         
-        # Get hero IDs for the classes
-        hero1 = HERO_IDS.get(class1, "HERO_08")
-        hero2 = HERO_IDS.get(class2, "HERO_01")
-        
-        p1 = Player("Player1")
-        p2 = Player("Player2")
-        p1.sideboard = sideboard1
-        p2.sideboard = sideboard2
-        
-        # Setup heroes
-        h1_data = CardDatabase.get_card(hero1) or CardData(hero1, class1, card_type=CardType.HERO)
-        h2_data = CardDatabase.get_card(hero2) or CardData(hero2, class2, card_type=CardType.HERO)
-        p1.hero = Hero(h1_data)
-        p2.hero = Hero(h2_data)
+        class_to_hero = {
+            "WARRIOR": "HERO_01",
+            "SHAMAN": "HERO_02",
+            "ROGUE": "HERO_03",
+            "PALADIN": "HERO_04",
+            "HUNTER": "HERO_05",
+            "DRUID": "HERO_06",
+            "WARLOCK": "HERO_07",
+            "MAGE": "HERO_08",
+            "PRIEST": "HERO_09",
+            "DEMONHUNTER": "HERO_10",
+            "DEATHKNIGHT": "HERO_11",
+        }
+        hero1 = class_to_hero.get(class1.upper(), "HERO_08")
+        hero2 = class_to_hero.get(class2.upper(), "HERO_01")
+
+        if randomize_first and rnd.random() > 0.5:
+            # Swap p1/p2 to randomize who starts
+            p1 = Player("Player1")
+            p2 = Player("Player2")
+            p1.sideboard = sideboard2
+            p2.sideboard = sideboard1
+            
+            # Setup heroes (swapped)
+            h1_data = CardDatabase.get_card(hero2) or CardData(hero2, class2, card_type=CardType.HERO)
+            h2_data = CardDatabase.get_card(hero1) or CardData(hero1, class1, card_type=CardType.HERO)
+            p1.hero = Hero(h1_data)
+            p2.hero = Hero(h2_data)
+            
+            current_deck1, current_deck2 = deck2_ids, deck1_ids
+        else:
+            p1 = Player("Player1")
+            p2 = Player("Player2")
+            p1.sideboard = sideboard1
+            p2.sideboard = sideboard2
+            
+            # Setup heroes
+            h1_data = CardDatabase.get_card(hero1) or CardData(hero1, class1, card_type=CardType.HERO)
+            h2_data = CardDatabase.get_card(hero2) or CardData(hero2, class2, card_type=CardType.HERO)
+            p1.hero = Hero(h1_data)
+            p2.hero = Hero(h2_data)
+            
+            current_deck1, current_deck2 = deck1_ids, deck2_ids
+
         p1.hero.controller = p1
         p2.hero.controller = p2
         
@@ -138,22 +168,21 @@ class HearthstoneGame:
         self._game.setup(p1, p2)
         
         # Add decks (30 cards each)
-        # Add decks (30 cards each)
-        for cid in deck1_ids: 
+        for cid in current_deck1: 
             card = create_card(cid, self._game)
             if card:
                 p1.add_to_deck(card)
             else:
                 # Fallback for unknown ID to maintain deck size
-                print(f"WARNING: Unknown card ID {cid} replaced by Wisp (CS2_231) in Deck 1")
+                print(f"CRITICAL: Unknown card ID {cid} (not in Database). Replaced by Wisp.")
                 p1.add_to_deck(create_card("CS2_231", self._game))
                 
-        for cid in deck2_ids: 
+        for cid in current_deck2: 
             card = create_card(cid, self._game)
             if card:
                 p2.add_to_deck(card)
             else:
-                print(f"WARNING: Unknown card ID {cid} replaced by Wisp (CS2_231) in Deck 2")
+                print(f"CRITICAL: Unknown card ID {cid} (not in Database). Replaced by Wisp.")
                 p2.add_to_deck(create_card("CS2_231", self._game))
         
         p1.shuffle_deck()

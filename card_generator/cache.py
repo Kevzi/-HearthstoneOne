@@ -69,14 +69,17 @@ class EffectCache:
             return None
 
         try:
-            # We need to calculate the correct module path
-            # Assuming card_effects is in the PYTHONPATH
-            rel_path = os.path.relpath(path, os.path.dirname(self.cache_dir))
+            # Calculate the full package-style module name (e.g., card_effects.expansion.effect_ID)
+            # This is essential for supporting relative imports within the effect files
+            root_dir = os.path.dirname(os.path.abspath(self.cache_dir))
+            rel_path = os.path.relpath(os.path.abspath(path), root_dir)
             module_name = rel_path.replace(os.sep, ".").replace(".py", "")
             
-            spec = importlib.util.spec_from_file_location(f"effect_{card_id}", path)
+            spec = importlib.util.spec_from_file_location(module_name, path)
             if spec and spec.loader:
                 module = importlib.util.module_from_spec(spec)
+                # Set __package__ to allow relative imports
+                module.__package__ = module_name.rsplit('.', 1)[0]
                 
                 # Dynamic imports to avoid circular dependency
                 from simulator.card_loader import create_card, CardDatabase
