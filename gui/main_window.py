@@ -70,7 +70,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("DeepMana — AI Dashboard")
-        self.resize(1100, 850)
+        self.resize(980, 720)
         
         # Load Styles
         self.load_stylesheet()
@@ -103,8 +103,8 @@ class MainWindow(QMainWindow):
         self.console = QTextEdit()
         self.console.setObjectName("console")
         self.console.setReadOnly(True)
-        self.console.setFixedHeight(180)
-        self.console.setPlaceholderText("System logs will appear here...")
+        self.console.setFixedHeight(140)
+        self.console.setPlaceholderText("System logs...")
         self.container_layout.addWidget(self.console)
         
         # Initialize Pages
@@ -190,7 +190,7 @@ class MainWindow(QMainWindow):
     def setup_header(self):
         self.header = QFrame()
         self.header.setObjectName("header")
-        self.header.setFixedHeight(60)
+        self.header.setFixedHeight(50)
         header_layout = QHBoxLayout(self.header)
         
         header_layout.addStretch()

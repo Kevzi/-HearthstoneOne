@@ -1,6 +1,6 @@
 # 📋 HearthstoneOne — Roadmap
 
-> Last updated: 2026-01-04
+> Last updated: 2026-01-04 (V1.2)
 
 ---
 
@@ -84,6 +84,7 @@
 | Meta Decks Library | ✅ |
 | Training Controls (Start/Stop) | ✅ |
 | Integrated Log Terminal | ✅ |
+| GUI Compactness & Density Optimization | ✅ |
 
 ---
 

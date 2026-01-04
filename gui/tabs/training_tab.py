@@ -8,7 +8,7 @@ class TrainingTab(QWidget):
     def __init__(self):
         super().__init__()
         self.layout = QVBoxLayout(self)
-        self.layout.setContentsMargins(60, 60, 60, 60)
+        self.layout.setContentsMargins(30, 30, 30, 30)
         self.layout.setSpacing(0)
         
         # 1. Hero Section (Branding)
@@ -19,7 +19,7 @@ class TrainingTab(QWidget):
         self.logo_label = QLabel()
         logo_path = os.path.join("gui", "assets", "logo.png")
         if os.path.exists(logo_path):
-            pix = QPixmap(logo_path).scaled(240, 240, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+            pix = QPixmap(logo_path).scaled(160, 160, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
             self.logo_label.setPixmap(pix)
         else:
             self.logo_label.setText("💠")
@@ -55,8 +55,8 @@ class TrainingTab(QWidget):
         self.dash_card.setProperty("class", "glass-card")
         self.dash_card.setMinimumHeight(240)
         self.dash_layout = QVBoxLayout(self.dash_card)
-        self.dash_layout.setContentsMargins(40, 40, 40, 40)
-        self.dash_layout.setSpacing(30)
+        self.dash_layout.setContentsMargins(30, 25, 30, 25)
+        self.dash_layout.setSpacing(25)
         
         # Stats Row
         stats_row = QHBoxLayout()
@@ -78,12 +78,12 @@ class TrainingTab(QWidget):
         
         self.btn_start = QPushButton("INITIATE NEURAL LINK")
         self.btn_start.setObjectName("neural-btn")
-        self.btn_start.setFixedSize(320, 56)
+        self.btn_start.setFixedSize(260, 48)
         self.btn_start.setCursor(Qt.CursorShape.PointingHandCursor)
         
-        self.btn_stop = QPushButton("TERMINATE")
+        self.btn_stop = QPushButton("STOP")
         self.btn_stop.setObjectName("stop-btn")
-        self.btn_stop.setFixedSize(140, 56)
+        self.btn_stop.setFixedSize(110, 48)
         self.btn_stop.setEnabled(False)
         self.btn_stop.setCursor(Qt.CursorShape.PointingHandCursor)
         

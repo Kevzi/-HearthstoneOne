@@ -9,14 +9,14 @@ QMainWindow {
 #sidebar {
     background-color: #030712;
     border-right: 1px solid #1e293b;
-    min-width: 220px;
+    min-width: 200px;
 }
 
 #sidebar QPushButton {
     color: #94a3b8;
     background-color: transparent;
     border: none;
-    padding: 12px 20px;
+    padding: 10px 16px;
     font-size: 13px;
     font-weight: 500;
     border-radius: 8px;

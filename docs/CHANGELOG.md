@@ -14,10 +14,14 @@ All notable changes to the HearthstoneOne project.
 
 ### 🔧 Changed
 - **Graveyard Order** — Deaths are now resolved strictly by `summon_timestamp`, ensuring correct deathrattle sequences.
-- **Action space** — Increased `PLAY_CARD` target resolution from 10 to 20 slots per card.
+- **Action space** — Increased `PLAY_CARD` target resolution from 10 to 20 slots per card (300 indices total).
+- **Extended Game Limits** — Increased maximum steps per game from 150/200 to **500** to allow for long matches.
 
 ### 🧪 Fixed
 - **Missing Actions** — Enabled `TRADE` and `FORGE` actions in the `HearthstoneGame` wrapper for training.
+- **Resolved excessive draws** — Refactored `MCTS` simulation to use centralized `wrapper.step()`, allowing the AI to correctly evaluate attacks and effects in its "thinking" phase.
+- **GUI Compactness** — Optimized Dashboard layout by reducing margins (60px → 30px), window dimensions (1100x850 → 980x720), and element scales (Logo 240px → 160px) for a more efficient interface.
+- **Action Index Offset Symmetry** — Fixed a bug where `CHOOSE`, `TRADE`, and `FORGE` indices overlapped with `PLAY_CARD` targets.
 
 ---
 
