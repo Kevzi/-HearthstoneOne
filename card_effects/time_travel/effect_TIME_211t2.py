@@ -2,9 +2,10 @@
 from simulator.entities import Card, Minion
 from simulator.player import Player
 from simulator.game import Game
+from simulator.enums import CardType
 
 def on_play(game: Game, player: Player, card: Card, target=None):
-    if target and target.owner == player and target.card_type == 1: # MINION
+    if target and target.controller == player and target.card_type == CardType.MINION:
         if len(player.board) < 7:
             # Create a copy with same stats and buffs
             copy = Minion(target.data, game)

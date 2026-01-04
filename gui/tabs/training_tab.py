@@ -1,132 +1,144 @@
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QFrame, 
-                             QLabel, QPushButton, QProgressBar, QGridLayout)
-from PyQt6.QtCore import Qt, pyqtSignal, QThread
-import pyqtgraph as pg
+                             QLabel, QPushButton, QProgressBar, QApplication)
+from PyQt6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve, pyqtProperty
+from PyQt6.QtGui import QPixmap, QColor, QFont
+import os
 
 class TrainingTab(QWidget):
     def __init__(self):
         super().__init__()
         self.layout = QVBoxLayout(self)
-        self.layout.setContentsMargins(20, 20, 20, 20)
-        self.layout.setSpacing(20)
+        self.layout.setContentsMargins(60, 80, 60, 60)
+        self.layout.setSpacing(40)
         
-        # History for plots
-        self.loss_history = []
-        self.wr_history = []
-        self.iterations = []
+        # 1. Main Branding (Minimalist)
+        brand_layout = QVBoxLayout()
+        brand_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
-        # 1. Stats Row
-        stats_layout = QHBoxLayout()
-        self.card_iter = self.create_stat_card("ITERATION", "0 / 100")
-        self.card_winrate = self.create_stat_card("P2 WINRATE", "0.0 %")
-        self.card_loss = self.create_stat_card("LOSS", "0.000")
+        self.logo_label = QLabel()
+        logo_path = os.path.join("gui", "assets", "logo.png")
+        if os.path.exists(logo_path):
+            pix = QPixmap(logo_path).scaled(180, 180, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+            self.logo_label.setPixmap(pix)
+        else:
+            self.logo_label.setText("💠")
+            self.logo_label.setStyleSheet("font-size: 100px; color: #22d3ee;")
+            
+        brand_layout.addWidget(self.logo_label, 0, Qt.AlignmentFlag.AlignCenter)
         
-        stats_layout.addWidget(self.card_iter)
-        stats_layout.addWidget(self.card_winrate)
-        stats_layout.addWidget(self.card_loss)
-        self.layout.addLayout(stats_layout)
+        self.title = QLabel("DEEPMANA")
+        self.title.setStyleSheet("""
+            font-size: 64px; 
+            font-weight: 900; 
+            color: #ffffff; 
+            letter-spacing: 16px; 
+            margin-top: 20px;
+            background: transparent;
+        """)
+        brand_layout.addWidget(self.title, 0, Qt.AlignmentFlag.AlignCenter)
         
-        # 2. Charts Row
-        charts_layout = QHBoxLayout()
+        self.subtitle = QLabel("NEURAL CORE: READY")
+        self.subtitle.setStyleSheet("font-size: 12px; color: #475569; font-weight: bold; letter-spacing: 4px; margin-top: -10px;")
+        brand_layout.addWidget(self.subtitle, 0, Qt.AlignmentFlag.AlignCenter)
         
-        # Loss Plot
-        self.loss_plot_wid = QFrame()
-        self.loss_plot_wid.setProperty("class", "card")
-        lp_layout = QVBoxLayout(self.loss_plot_wid)
-        lp_layout.addWidget(QLabel("Loss History"))
-        self.loss_plot = pg.PlotWidget()
-        self.loss_plot.setBackground('transparent')
-        self.loss_plot.showGrid(x=True, y=True, alpha=0.3)
-        self.loss_plot.setLabel('left', 'Loss')
-        self.loss_plot.setLabel('bottom', 'Iteration')
-        self.loss_curve = self.loss_plot.plot(pen=pg.mkPen(color='#3b82f6', width=3))
-        lp_layout.addWidget(self.loss_plot)
-        charts_layout.addWidget(self.loss_plot_wid)
+        self.layout.addLayout(brand_layout)
+        self.layout.addStretch()
         
-        # Winrate Plot
-        self.wr_plot_wid = QFrame()
-        self.wr_plot_wid.setProperty("class", "card")
-        wrp_layout = QVBoxLayout(self.wr_plot_wid)
-        wrp_layout.addWidget(QLabel("Player 2 Winrate"))
-        self.wr_plot = pg.PlotWidget()
-        self.wr_plot.setBackground('transparent')
-        self.wr_plot.showGrid(x=True, y=True, alpha=0.3)
-        self.wr_plot.setLabel('left', 'Winrate %')
-        self.wr_plot.setLabel('bottom', 'Iteration')
-        self.wr_plot.setYRange(0, 100)
-        self.wr_curve = self.wr_plot.plot(pen=pg.mkPen(color='#10b981', width=3))
-        wrp_layout.addWidget(self.wr_plot)
-        charts_layout.addWidget(self.wr_plot_wid)
+        # 2. Controls
+        btn_layout = QVBoxLayout()
+        btn_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
-        self.layout.addLayout(charts_layout)
+        self.btn_start = QPushButton("INITIATE NEURAL LINK")
+        self.btn_start.setFixedSize(320, 60)
+        self.btn_start.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_start.setStyleSheet("""
+            QPushButton {
+                background: transparent;
+                color: #22d3ee;
+                font-size: 15px;
+                font-weight: bold;
+                border: 2px solid #22d3ee;
+                border-radius: 30px;
+                letter-spacing: 3px;
+            }
+            QPushButton:hover {
+                background: #22d3ee;
+                color: #0f172a;
+            }
+            QPushButton:disabled {
+                border-color: #1e293b;
+                color: #475569;
+            }
+        """)
         
-        # 3. Controls & Progress
-        control_card = QFrame()
-        control_card.setProperty("class", "card")
-        cc_layout = QVBoxLayout(control_card)
-        
-        top_cc = QHBoxLayout()
-        top_cc.addWidget(QLabel("Self-Play Data Collection"))
-        self.progress = QProgressBar()
-        self.progress.setValue(0)
-        top_cc.addWidget(self.progress)
-        cc_layout.addLayout(top_cc)
-        
-        bot_cc = QHBoxLayout()
-        self.btn_start = QPushButton("START ENGINE")
-        self.btn_start.setObjectName("start_btn")
-        self.btn_start.setFixedHeight(45)
-        
-        self.btn_stop = QPushButton("STOP")
-        self.btn_stop.setObjectName("stop_btn")
-        self.btn_stop.setFixedHeight(45)
+        self.btn_stop = QPushButton("TERMINATE")
+        self.btn_stop.setFixedSize(320, 60)
+        self.btn_stop.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_stop.setEnabled(False)
+        self.btn_stop.setStyleSheet("""
+            QPushButton {
+                background: transparent;
+                color: #ef4444;
+                font-size: 14px;
+                font-weight: bold;
+                border: 1px solid #ef4444;
+                border-radius: 30px;
+                margin-top: 10px;
+            }
+            QPushButton:hover {
+                background: rgba(239, 68, 68, 0.1);
+            }
+        """)
         
-        bot_cc.addWidget(self.btn_start)
-        bot_cc.addWidget(self.btn_stop)
-        cc_layout.addLayout(bot_cc)
+        btn_layout.addWidget(self.btn_start)
+        btn_layout.addWidget(self.btn_stop)
+        self.layout.addLayout(btn_layout)
         
-        self.layout.addWidget(control_card)
+        self.layout.addStretch()
+        
+        # 3. Footer Stats (Ultra Minimalist)
+        stats_layout = QHBoxLayout()
+        stats_layout.setContentsMargins(20, 0, 20, 0)
+        
+        self.stat_iter = self.create_mini_stat("ITERATION", "0")
+        self.stat_wr = self.create_mini_stat("WIN RATE", "--%")
+        self.stat_status = self.create_mini_stat("STATUS", "IDLE")
+        
+        stats_layout.addWidget(self.stat_iter)
+        stats_layout.addStretch()
+        stats_layout.addWidget(self.stat_status)
+        stats_layout.addStretch()
+        stats_layout.addWidget(self.stat_wr)
+        
+        self.layout.addLayout(stats_layout)
+
+    def create_mini_stat(self, label, value):
+        w = QWidget()
+        l = QVBoxLayout(w)
+        l.setSpacing(2)
+        l.setContentsMargins(0,0,0,0)
+        l.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
+        lbl = QLabel(label)
+        lbl.setStyleSheet("color: #64748b; font-size: 10px; font-weight: bold; letter-spacing: 1px;")
+        val = QLabel(value)
+        val.setStyleSheet("color: white; font-size: 18px; font-weight: bold;")
+        
+        l.addWidget(lbl)
+        l.addWidget(val)
+        
+        w.val_label = val # Store ref
+        return w
 
     def update_data(self, stats):
-        """Update the UI with real training statistics."""
         iteration = stats.get("iteration", 0)
         winners = stats.get("winners", {})
-        loss = stats.get("avg_loss", 0.0)
-        
-        # Calculate winrate for P2
         total_games = sum(winners.values())
         wr_p2 = (winners.get(2, 0) / total_games * 100) if total_games > 0 else 0
         
-        # Update Cards
-        self.card_iter.value_label.setText(f"{iteration} / 100")
-        self.card_winrate.value_label.setText(f"{wr_p2:.1f} %")
-        self.card_loss.value_label.setText(f"{loss:.3f}")
+        self.stat_iter.val_label.setText(str(iteration))
+        self.stat_wr.val_label.setText(f"{wr_p2:.1f}%")
+        self.stat_status.val_label.setText("LEARNING")
+        self.stat_status.val_label.setStyleSheet("color: #00ffff; font-size: 18px; font-weight: bold;")
         
-        # Update Plots
-        self.iterations.append(iteration)
-        self.loss_history.append(loss)
-        self.wr_history.append(wr_p2)
-        
-        self.loss_curve.setData(self.iterations, self.loss_history)
-        self.wr_curve.setData(self.iterations, self.wr_history)
-        
-        # Progress Bar logic (Simplified for now)
-        self.progress.setValue(100)
-
-    def create_stat_card(self, title, value):
-        card = QFrame()
-        card.setProperty("class", "card")
-        card_layout = QVBoxLayout(card)
-        
-        t_label = QLabel(title)
-        t_label.setStyleSheet("color: #94a3b8; font-size: 11px; font-weight: bold;")
-        v_label = QLabel(value)
-        v_label.setStyleSheet("color: #f8fafc; font-size: 24px; font-weight: 800;")
-        
-        card_layout.addWidget(t_label)
-        card_layout.addWidget(v_label)
-        
-        # Store ref to value label to update it later
-        card.value_label = v_label
-        return card
+        self.subtitle.setText(f"PROCESSING BATCH {iteration}...")

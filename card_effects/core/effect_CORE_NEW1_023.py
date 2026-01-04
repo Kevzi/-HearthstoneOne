@@ -1,0 +1,1 @@
+# Vanilla card effect (Placeholder)

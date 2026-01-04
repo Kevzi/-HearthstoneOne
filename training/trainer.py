@@ -21,33 +21,62 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from ai.model import HearthstoneModel
 from ai.replay_buffer import ReplayBuffer
+from ai.encoder import FeatureEncoder
+from ai.actions import ACTION_SPACE_SIZE
 from training.data_collector import DataCollector
 
 class Trainer:
     def __init__(self, config=None):
         self.config = config or {}
         
-        # Hyperparameters - Optimized for RTX 3070 Ti
-        self.input_dim = 690
-        self.action_dim = 200
-        self.learning_rate = 1e-4         # More stable for long training
-        self.batch_size = 128             # RTX 3070 Ti can handle this
+        # Dynamic Dimensions from components
+        self.input_dim = FeatureEncoder().input_dim
+        self.action_dim = ACTION_SPACE_SIZE
+        
+        # Hyperparameters
+        self.learning_rate = 1e-4
+        
+        # Default Settings
+        config_workers = 8
+        config_batch = 64
+        config_mcts = 25
+        
+        # Load from JSON if available (GUI Settings)
+        try:
+            import json
+            if os.path.exists("training_config.json"):
+                with open("training_config.json", 'r') as f:
+                    data = json.load(f)
+                    config_workers = data.get("workers", 8)
+                    config_batch = data.get("batch_size", 64)
+                    config_mcts = data.get("mcts_sims", 25)
+                    print(f"Loaded config: Workers={config_workers}, Batch={config_batch}, MCTS={config_mcts}")
+        except:
+            pass
+            
+        self.batch_size = config_batch
         self.epochs_per_iter = 5
-        self.num_iterations = 100         # More iterations for better learning
-        self.games_per_iter = 40          # More self-play games per iteration (8 at a time)
-        self.mcts_sims = 40      # Higher sims for better balance during self-play
-        self.buffer_capacity = 100000     # Keep more history
+        self.num_iterations = 120
+        self.games_per_iter = 40          
+        self.mcts_sims = config_mcts 
+        self.buffer_capacity = 100000
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         
         # Components
         self.model = HearthstoneModel(self.input_dim, self.action_dim).to(self.device)
         self.buffer = ReplayBuffer(self.buffer_capacity)
-        self.collector = DataCollector(self.model, self.buffer, num_workers=8)
+        self.collector = DataCollector(self.model, self.buffer, num_workers=config_workers)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate)
         self.stop_flag = False
         
         # TensorBoard
         self.writer = SummaryWriter(log_dir="runs/hearthstone_training")
+        
+        if torch.cuda.is_available():
+            print(f"[OK] CUDA Detected: {torch.cuda.get_device_name(0)}")
+        else:
+            print("[WARNING] CUDA NOT Detected. Training will be slow on CPU.")
+            
         print(f"TensorBoard: tensorboard --logdir=runs")
         
     def train(self, iteration_callback=None):

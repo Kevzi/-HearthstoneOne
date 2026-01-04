@@ -1,5 +1,5 @@
 """
-Fireplace game wrapper for HearthstoneOne AI.
+Fireplace game wrapper for DeepMana AI.
 
 Provides a clean interface for interacting with the Fireplace simulator,
 designed for both training (self-play) and inference.

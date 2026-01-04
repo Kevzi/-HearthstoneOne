@@ -262,6 +262,16 @@ class Card(Entity):
     @property
     def name(self) -> str:
         return self.data.name
+        
+    @property
+    def owner(self) -> Optional[Player]:
+        """Alias for controller, used by many effect scripts."""
+        return self.controller
+        
+    @property
+    def card_type_name(self) -> str:
+        """Helper to get card type name for scripts."""
+        return self.card_type.name
     
     @property
     def card_type(self) -> CardType:
@@ -274,6 +284,15 @@ class Card(Entity):
     @property
     def race(self) -> Race:
         return self.data.race
+        
+    @property
+    def races(self) -> List[Race]:
+        """Returns a list of races for this card. Handles dual-type and 'ALL'."""
+        if self.race == Race.INVALID:
+            return []
+        if self.race == Race.ALL:
+            return [r for r in Race if r != Race.INVALID]
+        return [self.race]
         
     @property
     def rarity(self) -> Rarity:

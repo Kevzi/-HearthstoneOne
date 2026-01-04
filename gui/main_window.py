@@ -15,6 +15,8 @@ from ai.model import HearthstoneModel
 from gui.tabs.training_tab import TrainingTab
 from gui.tabs.spy_tab import SpyTab
 from gui.tabs.decks_tab import DecksTab
+from gui.tabs.analytics_tab import AnalyticsTab
+from gui.tabs.settings_tab import SettingsTab
 from training.trainer import Trainer
 
 class TrainingThread(QThread):
@@ -67,7 +69,7 @@ class SideBarButton(QPushButton):
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("HearthstoneOne — AI Dashboard")
+        self.setWindowTitle("DeepMana — AI Dashboard")
         self.resize(1100, 850)
         
         # Load Styles
@@ -125,6 +127,8 @@ class MainWindow(QMainWindow):
 
     def update_stats(self, stats):
         self.training_page.update_data(stats)
+        if hasattr(self, 'analytics_page'):
+            self.analytics_page.update_data(stats)
 
     def start_training(self):
         self.status_label.setText("● TRAINING ACTIVE")
@@ -189,9 +193,6 @@ class MainWindow(QMainWindow):
         self.header.setFixedHeight(60)
         header_layout = QHBoxLayout(self.header)
         
-        logo = QLabel("HEARTHSTONE ONE")
-        logo.setObjectName("logo_label")
-        header_layout.addWidget(logo)
         header_layout.addStretch()
         
         # Status Badge
@@ -214,15 +215,13 @@ class MainWindow(QMainWindow):
         self.decks_page = DecksTab()
         self.pages.addWidget(self.decks_page)
         
-        # Others (Placeholders)
-        for name in ["Analytics", "Settings"]:
-            page = QWidget()
-            layout = QVBoxLayout(page)
-            title = QLabel(f"{name} Control Center")
-            title.setObjectName("title_label")
-            layout.addWidget(title)
-            layout.addStretch()
-            self.pages.addWidget(page)
+        # 3. Analytics Page
+        self.analytics_page = AnalyticsTab()
+        self.pages.addWidget(self.analytics_page)
+
+        # 4. Settings Page
+        self.settings_page = SettingsTab()
+        self.pages.addWidget(self.settings_page)
 
     def switch_page(self, index):
         self.pages.setCurrentIndex(index)

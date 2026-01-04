@@ -1,6 +1,10 @@
-# 🃏 HearthstoneOne
+<p align="center">
+  <img src="gui/assets/logo.png" width="250" alt="DeepMana Logo">
+</p>
 
-> **AI Assistant for Hearthstone** — Real-time Coaching + AlphaZero Training
+# 💠 DeepMana
+
+> **Evolutionary AI for Hearthstone** — Real-time Coaching + AlphaZero Training
 
 ![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white)
@@ -8,12 +12,13 @@
 
 ---
 
-## ✨ What is HearthstoneOne?
+## ✨ What is DeepMana?
 
-HearthstoneOne is a complete Artificial Intelligence ecosystem for Hearthstone:
+DeepMana is a complete Artificial Intelligence ecosystem for Hearthstone:
 
 - 🧠 **AlphaZero AI** — Learns to play from scratch via self-play (MCTS + Deep Learning)
 - 🖥️ **Premium Dashboard** — Full GUI to control training, visualize metrics, and manage meta decks
+- 🏟️ **Arena Mode** — Dedicated support for Draft & Play with **2026 Rotation** card pool (1500+ cards)
 - 👁️ **Real-Time Overlay** — **Glassmorphism Design** overlay providing live move suggestions
 - 🏎️ **Parallelization** — Ultra-fast training via **Multiprocessing** (8+ workers)
 - 🎮 **Universal Simulator** — Supports 1800+ cards and integration of real **Meta Decks**
@@ -32,7 +37,7 @@ flowchart TB
         Client --> Log
     end
 
-    subgraph ENGINE["⚙️ HearthstoneOne Engine"]
+    subgraph ENGINE["⚙️ DeepMana Engine"]
         subgraph RUNTIME["Runtime"]
             Watcher[LogWatcher]
             Parser[Parser]
@@ -100,9 +105,11 @@ flowchart LR
 
 ### AI Dashboard
 A centralized control center built with **PyQt6**:
-- **Training Tab**: Start/Stop the engine, visualize Loss & Winrate evolution in real-time.
+- **Training Tab**: Start/Stop the engine, see real-time status.
+- **Analytics**: Beautiful interactive charts for **Loss**, **Winrate**, and **Buffer Size**.
+- **Settings**: Adjust Training Hyperparameters (Workers, Batch Size) without coding.
+- **Meta Decks**: Browse Standard & Arena decks with **Mana Curve** visualization.
 - **Spy Mode**: Configure the overlay, choose the Inference Model.
-- **Meta Decks**: Browse the library of top-tier decks used for training with full card lists.
 
 ### Live Assistant
 The overlay displays suggestions in real-time on top of Hearthstone with a modern look.
@@ -148,6 +155,11 @@ pip install -r requirements.txt
 python gui/main_window.py
 ```
 
+### Play vs AI (Console)
+```bash
+python play_vs_ai.py
+```
+
 ### Launch Live Assistant Only
 ```bash
 python runtime/live_assistant.py
@@ -172,5 +184,5 @@ python tools/verify_effects.py
 ---
 
 <p align="center">
-  <b>HearthstoneOne</b> — Open-source project for AI research and education.
+  <b>DeepMana</b> — Open-source project for AI research and education.
 </p>
