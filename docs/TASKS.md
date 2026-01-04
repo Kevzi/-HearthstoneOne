@@ -150,6 +150,7 @@
 | **🎯 Hero Power Targeting** | ⏳ | Smart targeting for targeted hero powers |
 | **📊 Analytics Page** | ✅ | Real-time graphs with persistent history |
 | **⚙️ Settings Page** | ✅ | Configure training params (Workers, MCTS, Batch) |
+| **🎨 Hub Redesign** | ✅ | Unity Hub aesthetic (Premium Dark Theme) |
 
 ---
 

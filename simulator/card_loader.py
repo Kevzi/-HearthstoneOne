@@ -313,6 +313,7 @@ class CardDatabase:
             dark_gift='DARK_GIFT' in mechanics or '<b>Dark Gift</b>' in text,
             tourist='TOURIST' in mechanics,
             drink='three times' in text.lower() or 'Drink.' in text,
+            rewind='REWIND' in mechanics or '<b>Rewind</b>' in text,
             # Synergies
             elemental_synergy='If you played an Elemental last turn' in text,
             dragon_synergy='holding a Dragon' in text or 'If you\'re holding a Dragon' in text,

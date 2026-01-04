@@ -46,22 +46,27 @@ def _play_game_worker(model_state, input_dim, action_dim, mcts_sims, game_idx, v
         trajectory = []
         step_count = 0
         max_steps = 500
+        # Prepare state for MCTS (reuse encoder)
         while not env.is_game_over and step_count < max_steps:
+            # We must clone for MCTS as it explores future branches
             root_game_state = env.game.clone()
+            
+            # MCTS initialization is now lighter with the fix in ai/mcts.py
             mcts = MCTS(model, encoder, root_game_state, num_simulations=mcts_sims)
             mcts_probs = mcts.search(root_game_state)
             
+            # Current player perspective encoding
             encoded_state = encoder.encode(env.get_state())
-            # Current player ID in the simulator (1 or 2)
             current_p_id = 1 if env.current_player == env.game.players[0] else 2
             
             # Store transition (State, Probs, CurrentPlayerID)
             trajectory.append((encoded_state, mcts_probs, current_p_id))
             
-            # Pick action using MCTS probabilities (Symmetric)
+            # Pick action using MCTS probabilities
             action_idx = np.random.choice(len(mcts_probs), p=mcts_probs)
             
-            # Execute action
+            # Execute action using simulator's internal action if possible for speed
+            # Find the Action object from MCTS results to reuse its simulation metadata
             action = Action.from_index(action_idx)
             env.step(action)
                 

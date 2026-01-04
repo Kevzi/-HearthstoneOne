@@ -4,11 +4,16 @@ import torch
 import copy
 from typing import List, Dict, Tuple, Optional
 
+# Move imports to top to avoid overhead in loops
+from .actions import Action
+from .game_wrapper import HearthstoneGame
+
 class MCTSNode:
-    def __init__(self, state, parent=None, action_idx=None):
+    def __init__(self, state, parent=None, action_idx=None, action_obj=None):
         self.state = state
         self.parent = parent
         self.action_idx = action_idx
+        self.action_obj = action_obj # Store full action object with simulator metadata
         
         self.children = {} # Map action_idx -> MCTSNode
         self.is_expanded = False
@@ -35,6 +40,9 @@ class MCTS:
         self.c_puct = c_puct
         self.num_simulations = num_simulations
         
+        # Pre-instantiate a wrapper to reuse for logic checks (avoids repeated DB loads)
+        self._temp_wrapper = HearthstoneGame()
+        
     def search(self, root_state) -> List[float]:
         """
         Run MCTS simulations starting from root_state.
@@ -53,16 +61,17 @@ class MCTS:
                 node = self._select_child(node)
             
             # 2. Expansion & Expansion Evaluation
-            if not node.is_expanded: # Only expand if not terminal (heuristic)
-                # Need to verify if state is terminal?
-                # For now assume expansion handles state evaluation
+            if not node.is_expanded:
                 value = self._expand(node)
             else:
-                # Terminal or already expanded?
-                # If terminal, get value
-                # Simplified: re-evaluate or use stored value?
-                # Let's assume _expand returns the value for backprop
-                value = 0 # Placeholder for terminal check
+                # Terminal state value
+                # In standard AlphaZero, we'd use the game winner if finished
+                # or the NN value if it's just a leaf we already visited.
+                value = 0 
+                if hasattr(node.state, 'winner') and node.state.winner:
+                     # Perspective-aware value
+                     # This part needs care; assume 0 for now or call evaluate
+                     pass
             
             # 3. Backpropagation (Backup)
             self._backpropagate(node, value)
@@ -85,19 +94,10 @@ class MCTS:
         best_score = -float('inf')
         best_child = None
         
+        # Using a single perspective: Values are stored relative to the layer's player
         for action_idx, child in node.children.items():
             u = self.c_puct * child.prior_prob * math.sqrt(node.visit_count) / (1 + child.visit_count)
-            # Q value (exploit) + U value (explore)
-            # Perspective flip: if child is opponent's turn, value is inverted?
-            # AlphaZero usually predicts value for *current* player.
-            # MCTS standard backprop propagates value relative to root player or alternating?
-            # Simplified: Alternating game. If state.current_player != parent.current_player, value is flipped.
-            
-            # Assume value is always from perspective of player who made the move to reach this state?
-            # Or simpler: AlphaZero value head is P(Current Player Wins).
-            # If Child State is Opponent's turn, Value Head predicts Opponent Win Prob.
-            # So Q for Current Player = - Value(Child State).
-            
+            # Q is -child.value because child.value is from next player's perspective
             q_value = -child.value 
             
             score = q_value + u
@@ -105,37 +105,26 @@ class MCTS:
                 best_score = score
                 best_child = child
                 
-        if best_child is None:
-            # Should not happen unless no children
-            return node # Stuck?
-            
-        return best_child
+        return best_child or node
 
     def _expand(self, node: MCTSNode) -> float:
         """
         Expand leaf node using NN prediction.
         Returns: Value of the state (Leaf evaluation).
         """
-        # Encode state
+        # Lazy simulation: only apply action when we actually need to expand or evaluate
         if node.state is None:
-            # Should recreate state based on parent + action?
-            # Or traverse?
-            # For simplicity, we assume node.state is populated on creation
-            # OR we populate it here if it's None (lazy eval).
             if node.parent:
-                node.state = self._apply_action(node.parent.state, node.action_idx)
-        
-        # Simpler approach: node.game_copy object.
-        game_copy = node.state # Let's assume MCTSNode holds the Wrapper/Game as 'state'
-        
-        # Get valid actions indices
-        # We need to bridge 'Action' objects to 'Indices'
-        from .game_wrapper import HearthstoneGame
-        wrapper = HearthstoneGame()
-        wrapper._game = game_copy # Inject the clone
+                node.state = self._apply_action(node.parent, node.action_idx)
+            else:
+                return 0.0 # Should not happen for root
 
-        # Now we have a valid GameState from the wrapper
-        tensor = self.encoder.encode(wrapper.get_state()).unsqueeze(0) # Batch dim
+        # Prepare for NN
+        self._temp_wrapper._game = node.state
+        state_data = self._temp_wrapper.get_state()
+        
+        # Encode state
+        tensor = self.encoder.encode(state_data).unsqueeze(0) # Batch dim
         
         # Predict
         self.model.eval()
@@ -144,74 +133,44 @@ class MCTS:
             
         value = value.item()
         
-        # Mask invalid actions
-        # Get valid actions for this state
-        # We need a wrapper instance attached to this state/game clone?
-        # The GameState object is static data. We need to query the Simulator.
-        # Ideally node.state holds the Simulator Clone?
-        # Let's fix MCTSNode to hold the wrapper/simulator if feasible.
-        # REFACTOR: node.state should probably be the Wrapper (HearthstoneGame) instance itself
-        # to allow querying actions easily. Or we maintain GameState + clone separately.
+        # Get valid actions from simulator (Expensive call, do it once per expansion)
+        valid_actions = self._temp_wrapper.get_valid_actions()
         
-        
-        # Simpler approach: node.game_copy object.
-        # game_copy = node.state # Already done above
-        
-        # Get valid actions indices
-        # We need to bridge 'Action' objects to 'Indices'
-        # wrapper = HearthstoneGame() # Already done above
-        # wrapper._game = game_copy # Inject the clone
-        
-        valid_actions_objs = wrapper.get_valid_actions()
-        valid_indices = [a.to_index() for a in valid_actions_objs]
-        if not valid_indices: 
-            valid_indices = [0] # End turn fallback
-            
         node.is_expanded = True
         
-        # Create children
-        for idx in valid_indices:
+        # Create children using the valid actions found
+        for act_obj in valid_actions:
+             idx = act_obj.to_index()
              if idx not in node.children:
-                 # Safety check: ensure index is within model bounds
-                 if idx < policy_probs.size(1):
-                     child = MCTSNode(state=None, parent=node, action_idx=idx)
+                 if idx < self.model.action_dim:
+                     child = MCTSNode(state=None, parent=node, action_idx=idx, action_obj=act_obj)
                      child.prior_prob = policy_probs[0][idx].item()
                      node.children[idx] = child
-                 else:
-                     # Log warning or skip if model is stale
-                     pass
         
         return value
 
-    def _apply_action(self, parent_game, action_idx):
+    def _apply_action(self, parent_node: MCTSNode, action_idx: int):
         """
-        Apply action_idx to parent_game (Game object) and return new Game object.
+        Apply action_idx using the cached Action object if available.
         """
-        # Clone parent game first
-        new_game = parent_game.clone()
+        # 1. Clone parent state
+        new_game = parent_node.state.clone()
         
-        from .actions import Action
-        from .game_wrapper import HearthstoneGame
+        # 2. Get the action object (Fast lookup)
+        action_obj = None
+        if action_idx in parent_node.children:
+            action_obj = parent_node.children[action_idx].action_obj
         
-        # Instantiate a temporary wrapper
-        wrapper = HearthstoneGame()
-        wrapper._game = new_game
+        # 3. Use temp wrapper to step (No new instantiations)
+        self._temp_wrapper._game = new_game
         
-        # Find the action object matching the index in the current state
-        # This is important because step() needs the _sim_action metadata
-        action_to_exec = None
-        for action in wrapper.get_valid_actions():
-            if action.to_index() == action_idx:
-                action_to_exec = action
-                break
-        
-        if action_to_exec:
-            wrapper.step(action_to_exec)
+        if action_obj:
+            # This step is now FAST because action_obj has _sim_action metadata
+            self._temp_wrapper.step(action_obj)
         else:
-            # Fallback for indices that might have been valid in MCTS expansion 
-            # but are technically slightly invalid or lack metadata
-            action_obj = Action.from_index(action_idx)
-            wrapper.step(action_obj)
+            # Fallback (Slow path, shouldn't be hit often)
+            fallback_act = Action.from_index(action_idx)
+            self._temp_wrapper.step(fallback_act)
             
         return new_game
 
@@ -222,4 +181,5 @@ class MCTS:
             current.visit_count += 1
             current.value_sum += value
             current = current.parent
-            value = -value # Switch perspective for opponent
+            value = -value # Perspective flip
+

@@ -1,5 +1,6 @@
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QFrame, 
                              QLabel, QSpinBox, QComboBox, QPushButton, QFormLayout)
+from PyQt6.QtCore import Qt
 import json
 import os
 
@@ -14,15 +15,16 @@ class SettingsTab(QWidget):
         
         # Title
         title = QLabel("System Configuration")
-        title.setStyleSheet("font-size: 24px; font-weight: 800; color: #f8fafc;")
+        title.setStyleSheet("font-size: 28px; font-weight: 600; color: #ffffff; margin-bottom: 20px;")
         self.layout.addWidget(title)
         
         # Config Card
         card = QFrame()
-        card.setProperty("class", "card")
+        card.setObjectName("dash_card")
         form_layout = QFormLayout(card)
-        form_layout.setSpacing(20)
-        form_layout.setLabelAlignment(__import__("PyQt6.QtCore").QtCore.Qt.AlignmentFlag.AlignLeft)
+        form_layout.setContentsMargins(30, 30, 30, 30)
+        form_layout.setSpacing(25)
+        form_layout.setLabelAlignment(Qt.AlignmentFlag.AlignLeft)
         
         # 1. Hardware Settings
         self.spin_workers = QSpinBox()
@@ -33,8 +35,8 @@ class SettingsTab(QWidget):
         self.combo_device = QComboBox()
         self.combo_device.addItems(["Auto (CUDA if available)", "Force CPU", "Force CUDA"])
         
-        form_layout.addRow(self.create_label("CPU Workers", "Parallel processes for self-play"), self.spin_workers)
-        form_layout.addRow(self.create_label("Compute Device", "Hardware accelerator for training"), self.combo_device)
+        form_layout.addRow(self.create_label("CPU WORKERS", "Parallel processes for self-play collection"), self.spin_workers)
+        form_layout.addRow(self.create_label("COMPUTE DEVICE", "Hardware accelerator used for neural updates"), self.combo_device)
         
         # 2. Training Hyperparameters
         self.spin_batch = QSpinBox()
@@ -46,31 +48,34 @@ class SettingsTab(QWidget):
         self.spin_mcts.setRange(10, 800)
         self.spin_mcts.setValue(25)
         
-        form_layout.addRow(self.create_label("Batch Size", "Samples per gradient update"), self.spin_batch)
-        form_layout.addRow(self.create_label("MCTS Simulations", "Thinking steps per move"), self.spin_mcts)
+        form_layout.addRow(self.create_label("BATCH SIZE", "Number of training samples per neural update"), self.spin_batch)
+        form_layout.addRow(self.create_label("MCTS SIMULATIONS", "Thinking steps per decision during games"), self.spin_mcts)
         
         self.layout.addWidget(card)
         
+        self.layout.addSpacing(20)
+        
         # Save Button
-        self.btn_save = QPushButton("Save Configuration")
-        self.btn_save.setObjectName("start_btn") # Re-use green button style
-        self.btn_save.setFixedHeight(50)
+        self.btn_save = QPushButton("SAVE CONFIGURATION")
+        self.btn_save.setObjectName("neural-btn")
+        self.btn_save.setFixedHeight(44)
+        self.btn_save.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_save.clicked.connect(self.save_config)
         self.layout.addWidget(self.btn_save)
         
         self.layout.addStretch()
         
         self.load_config()
-
+ 
     def create_label(self, text, subtext):
         wid = QWidget()
         lay = QVBoxLayout(wid)
         lay.setContentsMargins(0,0,0,0)
-        lay.setSpacing(2)
+        lay.setSpacing(4)
         l1 = QLabel(text)
-        l1.setStyleSheet("font-size: 14px; color: #e2e8f0; font-weight: bold;")
+        l1.setStyleSheet("font-size: 11px; color: #8a8a8a; font-weight: 600; letter-spacing: 0.5px;")
         l2 = QLabel(subtext)
-        l2.setStyleSheet("font-size: 11px; color: #64748b;")
+        l2.setStyleSheet("font-size: 13px; color: #4a4a4a; font-weight: 400;")
         lay.addWidget(l1)
         lay.addWidget(l2)
         return wid

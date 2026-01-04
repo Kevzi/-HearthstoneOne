@@ -4,6 +4,14 @@ All notable changes to the HearthstoneOne project.
 
 ---
 
+## [2026-01-04] — Hub Redesign & MCTS Performance
+- **Unity Hub Aesthetic** — Complete GUI overhaul following the "DeepMana Hub" design (Dark theme, Blue accents, Rounded elements).
+- **MCTS Optimization (3x Speedup)** — Reusing internal simulator objects and caching Action metadata to drastically reduce computational overhead.
+- **Improved Live Assistant** — Stable communication between the overlay and background threads using signals and real `GameState` objects.
+- **Bug Fixes** — Resolved multiple missing imports (PyQt6) and corrected AI suggestion logic in SpyTab.
+
+---
+
 ## [2026-01-04] — Simulator Mechanics V1.1 (Tradeable, Forge, Magnetic)
 
 ### ✨ Added

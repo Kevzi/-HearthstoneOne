@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
                              QHBoxLayout, QPushButton, QLabel, QStackedWidget, 
                              QFrame, QTextEdit)
 from PyQt6.QtCore import Qt, QSize, QThread, pyqtSignal
-from PyQt6.QtGui import QIcon
+from PyQt6.QtGui import QIcon, QPixmap
 import qtawesome as qta
 import qdarktheme
 
@@ -69,8 +69,8 @@ class SideBarButton(QPushButton):
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("DeepMana — AI Dashboard")
-        self.resize(980, 720)
+        self.setWindowTitle("DeepMana Hub")
+        self.resize(1200, 800)
         
         # Load Styles
         self.load_stylesheet()
@@ -132,7 +132,7 @@ class MainWindow(QMainWindow):
 
     def start_training(self):
         self.status_label.setText("● TRAINING ACTIVE")
-        self.status_label.setStyleSheet("color: #10b981; font-weight: bold; margin-right: 15px;")
+        self.status_label.setStyleSheet("color: #4ec9b0; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;")
         self.training_page.btn_start.setEnabled(False)
         self.training_page.btn_stop.setEnabled(True)
         self.console.append(">>> Démarrage du moteur d'entraînement...")
@@ -144,8 +144,8 @@ class MainWindow(QMainWindow):
         self.training_page.btn_stop.setEnabled(False)
 
     def on_training_finished(self):
-        self.status_label.setText("● SYSTÈME PRÊT")
-        self.status_label.setStyleSheet("color: #94a3b8; font-weight: bold; margin-right: 15px;")
+        self.status_label.setText("● SYSTEM READY")
+        self.status_label.setStyleSheet("color: #8a8a8a; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;")
         self.training_page.btn_start.setEnabled(True)
         self.training_page.btn_stop.setEnabled(False)
         self.console.append(">>> Moteur arrêté.")
@@ -190,14 +190,31 @@ class MainWindow(QMainWindow):
     def setup_header(self):
         self.header = QFrame()
         self.header.setObjectName("header")
-        self.header.setFixedHeight(50)
+        self.header.setFixedHeight(60)
         header_layout = QHBoxLayout(self.header)
+        header_layout.setContentsMargins(20, 0, 20, 0)
+        
+        # Mini Logo
+        self.mini_logo = QLabel()
+        logo_path = os.path.join("gui", "assets", "logo.png")
+        if os.path.exists(logo_path):
+            pix = QPixmap(logo_path).scaled(24, 24, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+            self.mini_logo.setPixmap(pix)
+        else:
+            self.mini_logo.setText("💠")
+            self.mini_logo.setStyleSheet("font-size: 20px; color: #0078d4;")
+        header_layout.addWidget(self.mini_logo)
+        
+        header_title = QLabel("DeepMana Hub")
+        header_title.setStyleSheet("font-weight: 600; font-size: 14px; color: #ffffff; margin-left: 10px;")
+        header_layout.addWidget(header_title)
         
         header_layout.addStretch()
         
         # Status Badge
         self.status_label = QLabel("● SYSTEM READY")
-        self.status_label.setStyleSheet("color: #94a3b8; font-weight: bold; margin-right: 15px;")
+        self.status_label.setObjectName("status-badge")
+        self.status_label.setStyleSheet("color: #8a8a8a; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;")
         header_layout.addWidget(self.status_label)
         
         self.container_layout.addWidget(self.header)

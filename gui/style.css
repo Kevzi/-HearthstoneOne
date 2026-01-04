@@ -1,102 +1,229 @@
-/* DeepMana Premium Design System - Ultimate Edition */
+/* Unity Hub Inspired Design System */
 
 QMainWindow {
-    background-color: #020617;
-    /* Fond quasi noir profond */
+    background-color: #1a1a1a;
 }
 
-/* Sidebar - Plus étroite et élégante */
+/* Sidebar - Unity Hub Style */
 #sidebar {
-    background-color: #030712;
-    border-right: 1px solid #1e293b;
-    min-width: 200px;
+    background-color: #0d0d0d;
+    border-right: 1px solid #2a2a2a;
+    min-width: 220px;
+    max-width: 220px;
 }
 
 #sidebar QPushButton {
-    color: #94a3b8;
+    color: #8a8a8a;
     background-color: transparent;
     border: none;
-    padding: 10px 16px;
-    font-size: 13px;
+    padding: 14px 20px;
+    font-size: 14px;
     font-weight: 500;
-    border-radius: 8px;
-    margin: 4px 12px;
+    border-radius: 6px;
+    margin: 3px 10px;
+    text-align: left;
 }
 
 #sidebar QPushButton:hover {
-    color: #f8fafc;
-    background-color: #0f172a;
+    color: #ffffff;
+    background-color: #2a2a2a;
 }
 
 #sidebar QPushButton[active="true"] {
-    color: #3b82f6;
-    background-color: rgba(59, 130, 246, 0.1);
-    font-weight: bold;
+    color: #ffffff;
+    background-color: #0078d4;
+    font-weight: 600;
 }
 
-/* Dashboard Card - Style "Glass-Titanium" */
+/* Header */
+#header {
+    background-color: #1a1a1a;
+    border-bottom: 1px solid #2a2a2a;
+}
+
+/* Dashboard Card - Unity Hub Card Style */
 #dash_card {
-    background-color: #0f172a;
-    border: 1px solid #1e293b;
-    border-radius: 16px;
+    background-color: #242424;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
 }
 
-/* Statistiques - Typographie plus fine */
+/* Statistics */
 .stat-value {
     color: #ffffff;
-    font-size: 28px;
-    font-weight: 300;
-    /* Plus léger pour un look premium */
-    letter-spacing: -1px;
+    font-size: 32px;
+    font-weight: 600;
+    letter-spacing: -0.5px;
 }
 
 .stat-label {
-    color: #64748b;
-    font-size: 10px;
-    font-weight: bold;
+    color: #8a8a8a;
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-/* Boutons d'Action */
+/* Primary Button - Unity Hub Blue */
 #neural-btn {
-    background-color: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #3b82f6, stop:1 #2563eb);
+    background-color: #0078d4;
     color: white;
-    font-weight: bold;
-    font-size: 13px;
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    font-weight: 600;
+    font-size: 14px;
+    border-radius: 6px;
+    border: none;
+    padding: 12px 24px;
 }
 
 #neural-btn:hover {
-    background: #4f46e5;
+    background-color: #1084d8;
 }
 
+#neural-btn:pressed {
+    background-color: #006cbe;
+}
+
+#neural-btn:disabled {
+    background-color: #3a3a3a;
+    color: #6a6a6a;
+}
+
+/* Secondary Button */
 #stop-btn {
     background-color: transparent;
-    color: #94a3b8;
-    border: 1px solid #334155;
-    border-radius: 12px;
-    font-size: 12px;
+    color: #8a8a8a;
+    border: 1px solid #3a3a3a;
+    border-radius: 6px;
+    font-size: 14px;
+    padding: 12px 24px;
+    font-weight: 500;
 }
 
 #stop-btn:hover {
-    color: #ef4444;
-    border-color: #ef4444;
-    background-color: rgba(239, 68, 68, 0.05);
+    color: #ffffff;
+    border-color: #5a5a5a;
+    background-color: #2a2a2a;
 }
 
-/* Console - Plus discrète en bas */
+#stop-btn:disabled {
+    color: #4a4a4a;
+    border-color: #2a2a2a;
+}
+
+/* Console - Unity Hub Console Style */
 #console {
-    background-color: #020617;
-    color: #475569;
-    font-family: "JetBrains Mono", "Cascadia Code", "Consolas";
-    font-size: 11px;
-    border-top: 1px solid #1e293b;
-    padding: 10px;
+    background-color: #0d0d0d;
+    color: #8a8a8a;
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 12px;
+    border-top: 1px solid #2a2a2a;
+    padding: 12px;
+    selection-background-color: #0078d4;
 }
 
-/* Titres */
+/* Titles */
 #main_title {
-    color: white;
-    font-size: 32px;
-    font-weight: 800;
+    color: #ffffff;
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+}
+
+/* QLabel General */
+QLabel {
+    color: #ffffff;
+}
+
+/* QComboBox - Unity Hub Dropdown */
+QComboBox {
+    background-color: #242424;
+    color: #ffffff;
+    border: 1px solid #3a3a3a;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 13px;
+}
+
+QComboBox:hover {
+    border-color: #5a5a5a;
+}
+
+QComboBox::drop-down {
+    border: none;
+    width: 20px;
+}
+
+QComboBox QAbstractItemView {
+    background-color: #242424;
+    color: #ffffff;
+    border: 1px solid #3a3a3a;
+    selection-background-color: #0078d4;
+}
+
+/* QSpinBox */
+QSpinBox {
+    background-color: #242424;
+    color: #ffffff;
+    border: 1px solid #3a3a3a;
+    border-radius: 6px;
+    padding: 8px;
+    font-size: 13px;
+}
+
+QSpinBox:hover {
+    border-color: #5a5a5a;
+}
+
+/* QCheckBox */
+QCheckBox {
+    color: #ffffff;
+    spacing: 8px;
+}
+
+QCheckBox::indicator {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    border: 1px solid #3a3a3a;
+    background-color: #242424;
+}
+
+QCheckBox::indicator:hover {
+    border-color: #5a5a5a;
+}
+
+QCheckBox::indicator:checked {
+    background-color: #0078d4;
+    border-color: #0078d4;
+}
+
+/* Scrollbar */
+QScrollBar:vertical {
+    background-color: #1a1a1a;
+    width: 12px;
+    border: none;
+}
+
+QScrollBar::handle:vertical {
+    background-color: #3a3a3a;
+    border-radius: 6px;
+    min-height: 30px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background-color: #4a4a4a;
+}
+
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical {
+    height: 0px;
+}
+
+/* Status Badge */
+.status-badge {
+    color: #8a8a8a;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }

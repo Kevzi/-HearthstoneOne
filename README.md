@@ -17,10 +17,10 @@
 DeepMana is a complete Artificial Intelligence ecosystem for Hearthstone:
 
 - 🧠 **AlphaZero AI** — Learns to play from scratch via self-play (MCTS + Deep Learning)
-- 🖥️ **Premium Dashboard** — Full GUI to control training, visualize metrics, and manage meta decks
+- 🖥️ **Hub Dashboard** — Unified interface inspired by **Unity Hub** for training control and analytics
 - 🏟️ **Arena Mode** — Dedicated support for Draft & Play with **2026 Rotation** card pool (1500+ cards)
 - 👁️ **Real-Time Overlay** — **Glassmorphism Design** overlay providing live move suggestions
-- 🏎️ **Parallelization** — Ultra-fast training via **Multiprocessing** (8+ workers)
+- 🏎️ **Optimized Engine** — High-performance MCTS with object reuse and lazy simulation
 - 🎮 **Universal Simulator** — Supports 1800+ cards and integration of real **Meta Decks**
 - 📈 **TensorBoard Monitoring** — Live tracking of metrics and win probability
 - 🕵️ **Auto-Validation** — Automated testing tool for card effect integrity

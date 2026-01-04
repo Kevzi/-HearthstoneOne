@@ -19,22 +19,22 @@ class AnalyticsTab(QWidget):
         charts_layout = QGridLayout()
         
         # 1. Loss Plot
-        self.loss_plot_wid = self.create_plot_card("Neural Network Loss", "Loss", "lower is better", "#3b82f6")
+        self.loss_plot_wid = self.create_plot_card("Neural Network Loss", "Loss", "Convergence metric", "#0078d4")
         self.loss_plot = self.loss_plot_wid.plot_widget
-        self.loss_curve = self.loss_plot.plot(pen=pg.mkPen(color='#3b82f6', width=3), symbol='o', symbolSize=8, symbolBrush='#3b82f6')
+        self.loss_curve = self.loss_plot.plot(pen=pg.mkPen(color='#0078d4', width=2), symbol='o', symbolSize=6, symbolBrush='#0078d4')
         charts_layout.addWidget(self.loss_plot_wid, 0, 0)
         
         # 2. Winrate Plot
-        self.wr_plot_wid = self.create_plot_card("AI (Player 2) Winrate", "Winrate %", "higher is better", "#10b981")
+        self.wr_plot_wid = self.create_plot_card("AI Performance", "Winrate %", "Self-play score", "#4ec9b0")
         self.wr_plot = self.wr_plot_wid.plot_widget
         self.wr_plot.setYRange(0, 100)
-        self.wr_curve = self.wr_plot.plot(pen=pg.mkPen(color='#10b981', width=3), symbol='o', symbolSize=8, symbolBrush='#10b981')
+        self.wr_curve = self.wr_plot.plot(pen=pg.mkPen(color='#4ec9b0', width=2), symbol='o', symbolSize=6, symbolBrush='#4ec9b0')
         charts_layout.addWidget(self.wr_plot_wid, 0, 1)
         
         # 3. Buffer Size
-        self.buffer_plot_wid = self.create_plot_card("Replay Buffer Size", "Samples", "data accumulation", "#a855f7")
+        self.buffer_plot_wid = self.create_plot_card("Replay Buffer", "Samples", "Data accumulation", "#a855f7")
         self.buffer_plot = self.buffer_plot_wid.plot_widget
-        self.buffer_curve = self.buffer_plot.plot(pen=pg.mkPen(color='#a855f7', width=3), symbol='o', symbolSize=8, symbolBrush='#a855f7')
+        self.buffer_curve = self.buffer_plot.plot(pen=pg.mkPen(color='#a855f7', width=2), symbol='o', symbolSize=6, symbolBrush='#a855f7')
         self.buffer_history = []
         charts_layout.addWidget(self.buffer_plot_wid, 1, 0, 1, 2) # Span full width
         
@@ -45,27 +45,38 @@ class AnalyticsTab(QWidget):
         
     def create_plot_card(self, title, axis_label, subtitle, color):
         card = QFrame()
-        card.setProperty("class", "card")
+        card.setObjectName("dash_card")
         layout = QVBoxLayout(card)
+        layout.setContentsMargins(20, 20, 20, 20)
         
         header = QHBoxLayout()
-        t_label = QLabel(title)
-        t_label.setStyleSheet(f"font-weight: bold; font-size: 14px; color: {color};")
-        s_label = QLabel(subtitle)
-        s_label.setStyleSheet("color: #64748b; font-size: 11px;")
+        header.setSpacing(10)
         
-        header.addWidget(t_label)
+        text_layout = QVBoxLayout()
+        t_label = QLabel(title.upper())
+        t_label.setStyleSheet("font-weight: 600; font-size: 11px; color: #8a8a8a; letter-spacing: 0.5px;")
+        s_label = QLabel(subtitle)
+        s_label.setStyleSheet("color: #4a4a4a; font-size: 11px;")
+        
+        text_layout.addWidget(t_label)
+        text_layout.addWidget(s_label)
+        header.addLayout(text_layout)
+        
         header.addStretch()
-        header.addWidget(s_label)
         layout.addLayout(header)
         
         plot = pg.PlotWidget()
         plot.setBackground('transparent')
-        plot.showGrid(x=True, y=True, alpha=0.3)
+        plot.showGrid(x=True, y=True, alpha=0.1)
         plot.setLabel('left', axis_label)
         plot.setLabel('bottom', 'Iteration')
-        plot.getAxis('left').setPen(color="#94a3b8")
-        plot.getAxis('bottom').setPen(color="#94a3b8")
+        
+        # Style axes
+        for axis in ['left', 'bottom']:
+            ax = plot.getAxis(axis)
+            ax.setPen(color="#3a3a3a")
+            ax.setTextPen(color="#8a8a8a")
+            
         layout.addWidget(plot)
         
         card.plot_widget = plot

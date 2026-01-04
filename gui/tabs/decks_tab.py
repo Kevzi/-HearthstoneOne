@@ -2,8 +2,8 @@ from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, 
     QScrollArea, QFrame, QApplication, QGridLayout
 )
-from PyQt6.QtGui import QColor, QPainter, QBrush, QPen
-from PyQt6.QtCore import Qt, QSize
+from PyQt6.QtGui import QColor, QPainter, QBrush, QPen, QFont
+from PyQt6.QtCore import Qt, QSize, QTimer
 import sys
 
 from simulator.deck_generator import DeckGenerator
@@ -29,7 +29,7 @@ class ManaCurveWidget(QWidget):
         bar_width = width / 8 # 0-7+
         gap = 4
         
-        painter.setBrush(QBrush(QColor("#3b82f6"))) # Blue
+        painter.setBrush(QBrush(QColor("#0078d4"))) # Unity Blue
         painter.setPen(Qt.PenStyle.NoPen)
         
         for cost in range(8):
@@ -41,15 +41,16 @@ class ManaCurveWidget(QWidget):
                 count = self.costs.get(cost, 0)
                 
             if count > 0:
-                bar_height = (count / max_count) * (height - 10)
+                bar_height = (count / max_count) * (height - 12)
                 x = cost * bar_width + gap/2
                 y = height - bar_height
-                painter.drawRoundedRect(int(x), int(y), int(bar_width - gap), int(bar_height), 2, 2)
+                painter.drawRoundedRect(int(x), int(y), int(bar_width - gap), int(bar_height), 3, 3)
                 
                 # Draw count text
-                painter.setPen(QColor("white"))
-                painter.drawText(int(x), int(y - 2), int(bar_width - gap), 10, Qt.AlignmentFlag.AlignCenter, str(count))
-                painter.setBrush(QBrush(QColor("#3b82f6")))
+                painter.setPen(QColor("#ffffff"))
+                painter.setFont(QFont("Segoe UI", 8))
+                painter.drawText(int(x), int(y - 4), int(bar_width - gap), 12, Qt.AlignmentFlag.AlignCenter, str(count))
+                painter.setBrush(QBrush(QColor("#0078d4")))
                 painter.setPen(Qt.PenStyle.NoPen)
 
 class DeckCardItem(QFrame):
@@ -60,39 +61,30 @@ class DeckCardItem(QFrame):
         self.deck_name = deck_name
         self.class_name = class_name
         
-        self.setProperty("class", "deck-item")
-        self.setStyleSheet("""
-            QFrame[class="deck-item"] {
-                background-color: #1e293b;
-                border: 1px solid #334155;
-                border-radius: 8px;
-            }
-            QFrame[class="deck-item"]:hover {
-                border: 1px solid #3b82f6;
-                background-color: #334155;
-            }
-        """)
+        self.setObjectName("dash_card")
         self.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.setFixedHeight(80)
+        self.setFixedHeight(72)
         
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(15, 10, 15, 10)
+        layout.setContentsMargins(16, 8, 16, 8)
+        layout.setSpacing(12)
         
-        # Icon / Class Color Strip
-        strip = QFrame()
-        strip.setFixedWidth(4)
-        strip.setStyleSheet(f"background-color: {self.get_class_color(class_name)}; border-radius: 2px;")
-        layout.addWidget(strip)
+        # Class Indicator
+        self.indicator = QFrame()
+        self.indicator.setFixedWidth(4)
+        self.indicator.setFixedHeight(30)
+        self.indicator.setStyleSheet(f"background-color: {self.get_class_color(class_name)}; border-radius: 2px;")
+        layout.addWidget(self.indicator)
         
         # Text Info
         text_layout = QVBoxLayout()
         text_layout.setSpacing(2)
         
         name_lbl = QLabel(deck_name)
-        name_lbl.setStyleSheet("font-weight: bold; font-size: 14px; color: white;")
+        name_lbl.setStyleSheet("font-weight: 600; font-size: 14px; color: #ffffff;")
         
         class_lbl = QLabel(class_name.upper())
-        class_lbl.setStyleSheet("font-size: 10px; color: #94a3b8; font-weight: bold; letter-spacing: 1px;")
+        class_lbl.setStyleSheet("font-size: 11px; color: #8a8a8a; font-weight: 500; letter-spacing: 0.5px;")
         
         text_layout.addWidget(name_lbl)
         text_layout.addWidget(class_lbl)
@@ -100,10 +92,10 @@ class DeckCardItem(QFrame):
         
         layout.addStretch()
         
-        # Arrow
-        arrow = QLabel("→")
-        arrow.setStyleSheet("color: #64748b; font-size: 18px;")
-        layout.addWidget(arrow)
+        # Arrow icon
+        icon = QLabel("") # Or just a simple arrow if no icon font is available
+        icon.setStyleSheet("color: #4a4a4a; font-size: 14px;")
+        layout.addWidget(icon)
 
     def mousePressEvent(self, event):
         self.parent_tab.load_deck_details(self.deck_name, self.class_name, self.code)
@@ -141,8 +133,8 @@ class DecksTab(QWidget):
         left_layout = QVBoxLayout(left_container)
         left_layout.setContentsMargins(20, 20, 20, 20)
         
-        title = QLabel("Meta Decks Library")
-        title.setStyleSheet("font-size: 20px; font-weight: 800; color: white; margin-bottom: 10px;")
+        title = QLabel("Meta Decks")
+        title.setStyleSheet("font-size: 24px; font-weight: 600; color: #ffffff; margin-bottom: 20px;")
         left_layout.addWidget(title)
         
         scroll = QScrollArea()
@@ -151,20 +143,16 @@ class DecksTab(QWidget):
         
         self.deck_list_widget = QWidget()
         self.deck_list_layout = QVBoxLayout(self.deck_list_widget)
-        self.deck_list_layout.setSpacing(10)
+        self.deck_list_layout.setSpacing(12)
         self.deck_list_layout.addStretch() # Push items up
         
         scroll.setWidget(self.deck_list_widget)
         left_layout.addWidget(scroll)
         
-        refresh_btn = QPushButton("Refresh Database")
-        refresh_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #334155; color: white; border: none; 
-                padding: 10px; border-radius: 6px; font-weight: bold;
-            }
-            QPushButton:hover { background-color: #475569; }
-        """)
+        refresh_btn = QPushButton("REFRESH LIBRARY")
+        refresh_btn.setObjectName("stop-btn") # Use secondary button style
+        refresh_btn.setFixedHeight(40)
+        refresh_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         refresh_btn.clicked.connect(self.load_decks)
         left_layout.addWidget(refresh_btn)
         
@@ -173,21 +161,21 @@ class DecksTab(QWidget):
         # Divider
         div = QFrame()
         div.setFixedWidth(1)
-        div.setStyleSheet("background-color: #334155;")
+        div.setStyleSheet("background-color: #2a2a2a;")
         main_layout.addWidget(div)
         
         # 2. Right Panel: Deck Details
         self.right_panel = QWidget()
         self.right_panel.setVisible(False) # Hidden by default
         right_layout = QVBoxLayout(self.right_panel)
-        right_layout.setContentsMargins(30, 30, 30, 30)
+        right_layout.setContentsMargins(40, 40, 40, 40)
         right_layout.setSpacing(15)
         
         # Detail Header
         self.detail_name = QLabel("Deck Name")
-        self.detail_name.setStyleSheet("font-size: 24px; font-weight: 800; color: white;")
+        self.detail_name.setStyleSheet("font-size: 28px; font-weight: 600; color: #ffffff;")
         self.detail_class = QLabel("CLASS")
-        self.detail_class.setStyleSheet("font-size: 12px; font-weight: bold; color: #94a3b8; letter-spacing: 1px;")
+        self.detail_class.setStyleSheet("font-size: 11px; font-weight: 600; color: #8a8a8a; letter-spacing: 0.5px;")
         
         right_layout.addWidget(self.detail_name)
         right_layout.addWidget(self.detail_class)
@@ -196,7 +184,9 @@ class DecksTab(QWidget):
         self.curve_container = QWidget()
         self.curve_layout = QVBoxLayout(self.curve_container)
         self.curve_layout.setContentsMargins(0,0,0,0)
-        right_layout.addWidget(QLabel("Mana Curve"))
+        curve_title = QLabel("MANA CURVE")
+        curve_title.setStyleSheet("color: #8a8a8a; font-size: 11px; font-weight: 600; letter-spacing: 0.5px; margin-top: 20px;")
+        right_layout.addWidget(curve_title)
         right_layout.addWidget(self.curve_container)
         
         # Card List Area
@@ -213,14 +203,10 @@ class DecksTab(QWidget):
         right_layout.addWidget(self.card_scroll)
         
         # Copy Button
-        self.copy_btn = QPushButton("Copy Deck Code")
-        self.copy_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #3b82f6; color: white; border: none;
-                padding: 12px; border-radius: 6px; font-weight: bold;
-            }
-            QPushButton:hover { background-color: #2563eb; }
-        """)
+        self.copy_btn = QPushButton("COPY DECK CODE")
+        self.copy_btn.setObjectName("neural-btn")
+        self.copy_btn.setFixedHeight(44)
+        self.copy_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self.copy_btn.clicked.connect(self.copy_current_code)
         right_layout.addWidget(self.copy_btn)
         
@@ -229,8 +215,9 @@ class DecksTab(QWidget):
         # Placeholder for right panel when empty
         self.empty_state = QLabel("Select a deck to view details")
         self.empty_state.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.empty_state.setStyleSheet("color: #64748b; font-size: 16px;")
+        self.empty_state.setStyleSheet("color: #4a4a4a; font-size: 16px; font-weight: 500;")
         main_layout.addWidget(self.empty_state, 6)
+
         
         self.load_decks()
         
@@ -327,10 +314,10 @@ class DecksTab(QWidget):
             
             # Badge Cost
             cost_badge = QLabel(str(card.cost))
-            cost_badge.setFixedSize(20, 20)
+            cost_badge.setFixedSize(22, 22)
             cost_badge.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            bg_col = "#3b82f6" if not is_side else "#64748b" # Gray for side
-            cost_badge.setStyleSheet(f"background-color: {bg_col}; color: white; border-radius: 3px; font-weight: bold;")
+            bg_col = "#0078d4" if not is_side else "#3a3a3a"
+            cost_badge.setStyleSheet(f"background-color: {bg_col}; color: white; border-radius: 4px; font-weight: 600; font-size: 11px;")
             rl.addWidget(cost_badge)
             
             # Name
@@ -338,14 +325,14 @@ class DecksTab(QWidget):
             if is_side: name_text = f"↳ {name_text}"
             
             name_lbl = QLabel(name_text)
-            color = "#e2e8f0"
+            color = "#ffffff"
             if card.rarity == 3: color = "#60a5fa" 
             if card.rarity == 4: color = "#a855f7" 
             if card.rarity == 5: color = "#facc15" 
-            if is_side: color = "#94a3b8" # Override color for side to dim it slightly
+            if is_side: color = "#8a8a8a"
             
             font_style = "italic" if is_side else "normal"
-            name_lbl.setStyleSheet(f"color: {color}; font-size: 13px; font-style: {font_style};")
+            name_lbl.setStyleSheet(f"color: {color}; font-size: 13px; font-style: {font_style}; font-weight: 500;")
             rl.addWidget(name_lbl)
             
             rl.addStretch()
@@ -355,7 +342,7 @@ class DecksTab(QWidget):
             if card.rarity == 5 and not is_side: qty_str = "★"
             
             qty_lbl = QLabel(qty_str)
-            qty_lbl.setStyleSheet("color: #64748b; font-weight: bold;")
+            qty_lbl.setStyleSheet("color: #8a8a8a; font-weight: 600; font-size: 12px;")
             rl.addWidget(qty_lbl)
             
             self.card_list_layout.insertWidget(self.card_list_layout.count()-1, row)

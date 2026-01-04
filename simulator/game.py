@@ -203,6 +203,10 @@ class Game:
             "callback": callback
         }
     
+    def initiate_discover(self, player: Player, options: List[Card], callback: Callable) -> None:
+        """Alias for discover to support legacy/generated scripts."""
+        self.discover(player, options, callback)
+    
     def choose_discover(self, choice_idx: int) -> bool:
         """Resolve a pending discover choice."""
         if not self.pending_choices:

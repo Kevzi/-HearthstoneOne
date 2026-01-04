@@ -31,7 +31,6 @@ class HeroState:
     def effective_health(self) -> int:
         """Total health including armor."""
         return self.health + self.armor
-    
     def to_dict(self) -> dict:
         """Convert to dictionary."""
         return {
