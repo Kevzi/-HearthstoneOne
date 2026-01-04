@@ -59,7 +59,7 @@ python evaluation.py
 
 ---
 
-## ⚠️ Status & Known Limitations (v1.1)
+## ⚠️ Status & Known Limitations (v1.2)
 
 | Feature | Status | Notes |
 |---------|--------|-------|
@@ -68,4 +68,6 @@ python evaluation.py
 | Magnetic | ✅ | Full support for targeting Mechs. |
 | Tradeable | ✅ | Fully implemented (1 mana draw cycle). |
 | Forge | ✅ | Fully implemented (2 mana upgrade logic). |
-| Hand Targeting | ✅ | Friendly targeting enabled in Action Space. |
+| Hand Targeting | ✅ | Friendly targeting enabled in Action Space (300 indices). |
+| Draw Resolution | ✅ | MCTS now correctly evaluates attacks and effects. |
+| GUI Density | ✅ | Compact Dashboard layout (980x720). |
