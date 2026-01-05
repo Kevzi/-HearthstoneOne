@@ -1,0 +1,14 @@
+"""Effect for Gunner Crewmate (GDB_471t3).
+
+Card Text: [x]<b>Rush</b>
+<b>Battlecry:</b> Summon every
+adjoining Crewmate.
+"""
+
+def battlecry(game, source, target):
+    player = source.controller
+    opponent = player.opponent
+
+    # Summon effect
+    # TODO: Implement summon logic for specific token
+    pass

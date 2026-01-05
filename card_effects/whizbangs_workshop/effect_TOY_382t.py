@@ -1,0 +1,12 @@
+"""Effect for Bandage (TOY_382t).
+
+Card Text: Restore #3 Health.
+"""
+
+def on_play(game, source, target):
+    player = source.controller
+    opponent = player.opponent
+
+    # Restore 3 Health
+    if target:
+        game.heal(target, 3, source)

@@ -1,0 +1,14 @@
+"""Effect for Battlecruiser (SC_999t).
+
+Card Text: <b>Starship</b>
+<i>(Costs (5) Mana to launch.)</i>
+"""
+
+def battlecry(game, source, target):
+    player = source.controller
+    opponent = player.opponent
+
+    # Effect: <b>Starship</b>
+<i>(Costs (5) Mana to launch.)</i>
+    # TODO: Implement
+    pass

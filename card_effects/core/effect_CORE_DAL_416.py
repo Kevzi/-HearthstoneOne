@@ -1,0 +1,12 @@
+"""Effect for Hench-Clan Burglar (CORE_DAL_416).
+
+Card Text: <b>Battlecry:</b> <b>Discover</b> a spell from another class.
+"""
+
+def battlecry(game, source, target):
+    player = source.controller
+    opponent = player.opponent
+
+    # Discover effect
+    # TODO: Implement discover with proper card pool
+    pass
