@@ -33,6 +33,14 @@ class HearthstoneGame:
     @property
     def is_game_over(self) -> bool: return self.game.ended
 
+    # Class to Hero ID mapping
+    CLASS_TO_HERO = {
+        "WARRIOR": "HERO_01", "SHAMAN": "HERO_02", "ROGUE": "HERO_03",
+        "PALADIN": "HERO_04", "HUNTER": "HERO_05", "DRUID": "HERO_06",
+        "WARLOCK": "HERO_07", "MAGE": "HERO_08", "PRIEST": "HERO_09",
+        "DEATHKNIGHT": "HERO_10", "DEMONHUNTER": "HERO_10a"
+    }
+
     def reset(self, deck1=None, deck2=None, class1=None, class2=None, randomize_first=True) -> GameState:
         # Use Meta decks or fallback
         if deck1 is None or deck2 is None:
@@ -44,6 +52,22 @@ class HearthstoneGame:
         p1, p2 = Player("P1"), Player("P2")
         self._game = Game()
         self._game.setup(p1, p2)
+        
+        # === CREATE HEROES ===
+        hero1_id = self.CLASS_TO_HERO.get(c1.upper(), "HERO_08")
+        hero2_id = self.CLASS_TO_HERO.get(c2.upper(), "HERO_08")
+        
+        p1.hero = create_card(hero1_id, self._game)
+        if p1.hero:
+            p1.hero.controller = p1
+            p1.hero._max_health = 30
+            p1.hero._damage = 0
+        
+        p2.hero = create_card(hero2_id, self._game)
+        if p2.hero:
+            p2.hero.controller = p2
+            p2.hero._max_health = 30
+            p2.hero._damage = 0
         
         for cid in d1:
             c = create_card(cid, self._game)
